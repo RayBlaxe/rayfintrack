@@ -1,0 +1,10 @@
+.env.local
+.env*.local
+node_modules/
+.next/
+out/
+public/sw.js
+public/workbox-*.js
+public/worker-*.js
+*.pem
+.DS_Store
