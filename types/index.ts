@@ -117,6 +117,7 @@ export interface TransactionDraft {
   amount: number
   category: string
   source_account: string
+  destination_account?: string | null
   flow_type: FlowType
   transaction_date: string
   merchant_name: string | null

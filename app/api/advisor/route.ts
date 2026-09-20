@@ -50,14 +50,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message required' }, { status: 400 })
     }
 
+    const now = new Date()
+    const todayStr = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }) // format YYYY-MM-DD
+    const dayName = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long' })
+
     const snapshot = await getFinancialSnapshot()
 
     const systemPrompt = `Kamu adalah RayFin AI — asisten keuangan pribadi yang cerdas, jujur, dan supel.
+WAKTU SAAT INI: Hari ${dayName}, tanggal ${todayStr} (zona waktu WIB / Asia/Jakarta).
 Data keuangan real-time pengguna: ${snapshot}
 
 Instruksi penting:
 1. Jika pesan mendeskripsikan transaksi keuangan (pembelian, pengeluaran, pemasukan, transfer), kembalikan JSON:
    { "type": "TRANSACTION", "content": "konfirmasi singkat", "draft": { "description": string, "amount": number, "category": string (dari: ${CATEGORY_ENUM.join(',')}), "source_account": string (dari: ${ACCOUNT_ENUM.join(',')}), "flow_type": string (dari: ${FLOW_ENUM.join(',')}), "transaction_date": "YYYY-MM-DD", "merchant_name": string or null } }
+   * ATURAN TANGGAL (PENTING): Gunakan tanggal hari ini "${todayStr}" secara default! Kecuali user menyebut "kemarin", "lusa", atau tanggal tertentu, hitung relatif terhadap "${todayStr}". DILARANG KERAS mengarang tanggal di tahun-tahun lalu (seperti 2023 atau 2024).
 2. Jika pertanyaan konsultasi/umum, kembalikan JSON:
    { "type": "TEXT", "content": "jawaban helpful dalam bahasa Indonesia, friendly tapi profesional, max 3 paragraf" }
 3. Selalu gunakan data keuangan real-time dalam jawaban.
@@ -90,9 +96,13 @@ Kembalikan HANYA JSON valid, tidak ada teks lain.`
       })
     }
 
-    // Add today's date to draft if missing
-    if (data.type === 'TRANSACTION' && data.draft && !data.draft.transaction_date) {
-      data.draft.transaction_date = new Date().toISOString().split('T')[0]
+    // Ensure transaction_date is valid and not a hallucinated old year
+    if (data.type === 'TRANSACTION' && data.draft) {
+      const draftDate = data.draft.transaction_date
+      if (!draftDate || !/^\d{4}-\d{2}-\d{2}$/.test(draftDate) || draftDate.startsWith('2023') || draftDate.startsWith('2024') || draftDate.startsWith('2025')) {
+        // Fallback to today's date if date is missing or looks like a hallucinated past year
+        data.draft.transaction_date = todayStr
+      }
     }
 
     return NextResponse.json(data)

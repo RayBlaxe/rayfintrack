@@ -16,6 +16,7 @@ interface Props {
 }
 
 export function TransactionDraftCard({ draft, onSaved, saved: initialSaved, onDiscard }: Props) {
+  const [currentDraft, setCurrentDraft] = useState<TransactionDraft>(draft)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(initialSaved ?? false)
   const [error, setError] = useState('')
@@ -30,7 +31,7 @@ export function TransactionDraftCard({ draft, onSaved, saved: initialSaved, onDi
     setSaving(true)
     setError('')
     try {
-      await insertClientTransaction(draft)
+      await insertClientTransaction(currentDraft)
       triggerRefresh()
       setSaved(true)
       onSaved()
@@ -60,30 +61,39 @@ export function TransactionDraftCard({ draft, onSaved, saved: initialSaved, onDi
       {/* Details */}
       <div className="px-4 py-3 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="text-white/50 text-xs">{FLOW_LABELS[draft.flow_type] ?? draft.flow_type}</span>
+          <span className="text-white/50 text-xs">{FLOW_LABELS[currentDraft.flow_type] ?? currentDraft.flow_type}</span>
           <span className={`text-sm font-bold ${
-            draft.flow_type === 'INCOME' ? 'text-[#CCFF00]' : 'text-[#FF85A1]'
+            currentDraft.flow_type === 'INCOME' ? 'text-[#CCFF00]' : 'text-[#FF85A1]'
           }`}>
-            {draft.flow_type === 'INCOME' ? '+' : '-'}{formatRupiah(draft.amount)}
+            {currentDraft.flow_type === 'INCOME' ? '+' : '-'}{formatRupiah(currentDraft.amount)}
           </span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-white/50 text-xs">Deskripsi</span>
-          <span className="text-white text-sm font-medium truncate max-w-[180px]">{draft.description}</span>
+          <span className="text-white text-sm font-medium truncate max-w-[180px]">{currentDraft.description}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-white/50 text-xs">Kategori</span>
           <span className="text-white text-xs">
-            {CATEGORY_EMOJI[draft.category] ?? '📦'} {draft.category}
+            {CATEGORY_EMOJI[currentDraft.category] ?? '📦'} {currentDraft.category}
           </span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-white/50 text-xs">Dari Akun</span>
-          <span className="text-white text-xs">{ACCOUNT_LABELS[draft.source_account] ?? draft.source_account}</span>
+          <span className="text-white text-xs">{ACCOUNT_LABELS[currentDraft.source_account] ?? currentDraft.source_account}</span>
         </div>
         <div className="flex items-center justify-between">
           <span className="text-white/50 text-xs">Tanggal</span>
-          <span className="text-white text-xs">{draft.transaction_date}</span>
+          {saved ? (
+            <span className="text-white text-xs font-mono">{currentDraft.transaction_date}</span>
+          ) : (
+            <input
+              type="date"
+              value={currentDraft.transaction_date}
+              onChange={e => setCurrentDraft(prev => ({ ...prev, transaction_date: e.target.value }))}
+              className="bg-white/10 border border-white/15 rounded-lg px-2 py-0.5 text-white text-xs font-mono focus:outline-none focus:border-[#CCFF00]"
+            />
+          )}
         </div>
       </div>
 

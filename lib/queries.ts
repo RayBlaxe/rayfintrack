@@ -115,6 +115,24 @@ export async function insertClientTransaction(
   const { data, error } = await sb
     .from('transactions').insert(payload).select().single()
   if (error) throw error
+
+  // Mutate account balance atomically via RPC
+  try {
+    const amount = Number(draft.amount)
+    if (draft.flow_type === 'EXPENSE') {
+      await sb.rpc('mutate_balance', { p_account_name: draft.source_account, p_delta: -amount })
+    } else if (draft.flow_type === 'INCOME') {
+      await sb.rpc('mutate_balance', { p_account_name: draft.source_account, p_delta: amount })
+    } else if (draft.flow_type === 'TRANSFER_INTERNAL') {
+      await sb.rpc('mutate_balance', { p_account_name: draft.source_account, p_delta: -amount })
+      if (draft.destination_account) {
+        await sb.rpc('mutate_balance', { p_account_name: draft.destination_account, p_delta: amount })
+      }
+    }
+  } catch (e) {
+    console.warn('Balance mutation failed:', e)
+  }
+
   return data
 }
 
