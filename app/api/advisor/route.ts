@@ -72,7 +72,7 @@ Kembalikan HANYA JSON valid, tidak ada teks lain.`
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-3.5-flash-lite',
       contents,
       config: {
         systemInstruction: systemPrompt,

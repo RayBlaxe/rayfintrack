@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 
-const ACCOUNT_ENUM = ['BCA','CIMB_NIAGA','CIMB_OCTO_PAY','SEABANK','SHOPEEPAY','GOPAY','DANA','CASH','MEGA_SYARIAH','OTHER']
+const ACCOUNT_ENUM = ['BCA','CIMB_NIAGA','CIMB_OCTO_PAY','SEABANK','SHOPEEPAY','GOPAY','DANA','CASH','MEGA_SYARIAH','E-WALLET','OTHER']
 const CATEGORY_ENUM = ['Makanan & Minuman','Belanja Online','Hiburan','Kesehatan','Pendidikan','Rumah Tangga','Operasional','Cicilan','Komitmen Keluarga','Lifestyle & Dating','Lainnya']
 
 const PROMPT = `Analisis struk/nota ini dan ekstrak informasi transaksi.
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash-lite',
+      model: 'gemini-3.5-flash-lite',
       contents: [{
         role: 'user',
         parts: [
