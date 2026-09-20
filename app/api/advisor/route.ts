@@ -1,17 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
 import { createServerClient } from '@supabase/ssr'
+import { cookies } from 'next/headers'
 
-const ACCOUNT_ENUM = ['BCA','CIMB_NIAGA','CIMB_OCTO_PAY','SEABANK','SHOPEEPAY','GOPAY','DANA','CASH','MEGA_SYARIAH','OTHER']
+const ACCOUNT_ENUM = ['BCA','CIMB_NIAGA','CIMB_OCTO_PAY','SEABANK','SHOPEEPAY','GOPAY','DANA','CASH','MEGA_SYARIAH','E-WALLET','OTHER']
 const CATEGORY_ENUM = ['Makanan & Minuman','Belanja Online','Hiburan','Kesehatan','Pendidikan','Rumah Tangga','Operasional','Cicilan','Komitmen Keluarga','Lifestyle & Dating','Gaji','Freelance','Investasi','Lainnya']
 const FLOW_ENUM = ['EXPENSE','INCOME','TRANSFER_INTERNAL']
 
 async function getFinancialSnapshot() {
   try {
+    const cookieStore = await cookies()
     const sb = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      { cookies: { getAll: () => [], setAll: () => {} } }
+      { 
+        cookies: { 
+          getAll: () => cookieStore.getAll(),
+          setAll: () => {} 
+        } 
+      }
     )
     const now = new Date()
     const monthYear = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`

@@ -2,13 +2,21 @@ export type FlowType = 'EXPENSE' | 'INCOME' | 'TRANSFER_INTERNAL'
 
 export type AccountName =
   | 'BCA' | 'CIMB_NIAGA' | 'CIMB_OCTO_PAY' | 'SEABANK'
-  | 'SHOPEEPAY' | 'GOPAY' | 'DANA' | 'CASH' | 'MEGA_SYARIAH' | 'OTHER'
+  | 'SHOPEEPAY' | 'GOPAY' | 'DANA' | 'CASH' | 'MEGA_SYARIAH' | 'E-WALLET' | 'OTHER'
 
 export type GoalCategory = 'EMERGENCY' | 'ASSET' | 'DREAM' | 'EDUCATION' | 'TRAVEL' | 'OTHER'
 export type AssetType = 'LIKUID' | 'TETAP' | 'INVESTASI'
 
+export interface Profile {
+  id: string
+  username: string
+  email?: string | null
+  created_at: string
+}
+
 export interface Account {
   id: string
+  user_id?: string
   account_name: AccountName
   current_balance: number
   updated_at: string
@@ -16,6 +24,7 @@ export interface Account {
 
 export interface Budget {
   id: string
+  user_id?: string
   month_year: string
   category: string
   limit_amount: number
@@ -23,6 +32,7 @@ export interface Budget {
 
 export interface Transaction {
   id: string
+  user_id?: string
   transaction_date: string
   source_account: AccountName
   destination_account: AccountName | null
@@ -63,6 +73,7 @@ export interface CategorySpending {
 
 export interface Goal {
   id: string
+  user_id?: string
   title: string
   target_amount: number
   current_amount: number
@@ -77,6 +88,7 @@ export interface Goal {
 
 export interface Asset {
   id: string
+  user_id?: string
   asset_name: string
   asset_type: AssetType
   value: number

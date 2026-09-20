@@ -2,33 +2,64 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useAuth } from '@/context/AuthContext'
-import { ArrowRight, Sparkles, User, ShieldCheck } from 'lucide-react'
-
-const SUGGESTED_USERS = ['Ray', 'Raihan', 'Personal']
+import { ArrowRight, User, ShieldCheck, Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
-  const { login } = useAuth()
+  const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!username.trim()) {
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
+  const handleLogin = async (name: string) => {
+    if (!name.trim()) {
       setError('Masukkan username terlebih dahulu')
       return
     }
-    login(username)
+    
+    setIsLoading(true)
+    setError('')
+    
+    const formattedUsername = name.trim().toLowerCase()
+    const email = `${formattedUsername}@rayfin.local`
+    const password = `RayFin!${formattedUsername}2026`
+
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+
+      if (signInError) {
+        // If login fails, redirect to register to create it
+        if (signInError.message.includes('Invalid login credentials')) {
+          router.push(`/register?username=${encodeURIComponent(name.trim())}`)
+          return
+        }
+        throw signInError
+      }
+
+      router.push('/')
+      router.refresh()
+    } catch (err: any) {
+      setError(err.message || 'Gagal login')
+      setIsLoading(false)
+    }
   }
 
-  const handleQuickSelect = (name: string) => {
-    setUsername(name)
-    login(name)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    handleLogin(username)
   }
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-6 py-12 relative overflow-hidden">
-      {/* Decorative ambient gradients */}
       <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#006466]/20 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-[#CCFF00]/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -38,7 +69,6 @@ export default function LoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-sm mx-auto space-y-8"
       >
-        {/* Brand Header */}
         <div className="text-center space-y-3">
           <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-gradient-to-br from-[#1b3a4b] to-[#0b525b] border border-white/10 shadow-xl shadow-[#006466]/20">
             <span className="text-3xl font-black text-[#CCFF00]">R</span>
@@ -47,15 +77,14 @@ export default function LoginPage() {
             <h1 className="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-2">
               RayFin <span className="text-[#CCFF00]">2.0</span>
             </h1>
-            <p className="text-xs text-white/50 mt-1">Personal Financial Assistant & Tracker</p>
+            <p className="text-xs text-white/50 mt-1">Multi-Tenant Financial Dashboard</p>
           </div>
         </div>
 
-        {/* Login Card */}
         <div className="bg-[#161B22] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6">
           <div className="space-y-1">
             <h2 className="text-base font-bold text-white">Selamat Datang 👋</h2>
-            <p className="text-xs text-white/40">Masuk dengan username untuk mengelola keuanganmu.</p>
+            <p className="text-xs text-white/40">Masuk dengan username untuk mengakses data kamu.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -80,42 +109,27 @@ export default function LoginPage() {
               {error && <p className="text-[11px] text-[#FF85A1]">{error}</p>}
             </div>
 
-            {/* Quick Suggestions */}
-            <div className="space-y-2">
-              <p className="text-[11px] text-white/40 font-medium">Atau pilih cepat:</p>
-              <div className="flex flex-wrap gap-2">
-                {SUGGESTED_USERS.map((name) => (
-                  <button
-                    key={name}
-                    type="button"
-                    onClick={() => handleQuickSelect(name)}
-                    className="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-[#CCFF00]/10 border border-white/10 hover:border-[#CCFF00]/40 text-xs text-white/70 hover:text-[#CCFF00] font-medium transition-all"
-                  >
-                    ⚡ {name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
             <button
               type="submit"
-              className="w-full h-12 rounded-2xl bg-[#CCFF00] hover:bg-[#b8e600] active:scale-[0.98] text-black font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#CCFF00]/20"
+              disabled={isLoading}
+              className="w-full h-12 rounded-2xl bg-[#CCFF00] hover:bg-[#b8e600] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none text-black font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#CCFF00]/20"
             >
-              <span>Masuk ke Dashboard</span>
-              <ArrowRight className="h-4 w-4" />
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <span>Masuk / Daftar</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
             </button>
           </form>
 
           <div className="pt-2 border-t border-white/5 flex items-center justify-center gap-1.5 text-[11px] text-white/40">
             <ShieldCheck className="h-3.5 w-3.5 text-[#CCFF00]" />
-            <span>Tersimpan aman di perangkat ini</span>
+            <span>Multi-tenant Isolation (RLS) Aktif</span>
           </div>
         </div>
-
-        {/* Footer info */}
-        <p className="text-center text-[11px] text-white/30">
-          Powered by Supabase & Gemini AI
-        </p>
       </motion.div>
     </div>
   )

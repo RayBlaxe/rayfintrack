@@ -10,6 +10,7 @@ export const ACCOUNT_LABELS: Record<string, string> = {
   DANA:          'DANA',
   CASH:          'Tunai',
   MEGA_SYARIAH:  'KK Mega Syariah',
+  'E-WALLET':    'E-Wallet (Other)',
   OTHER:         'Lainnya',
 }
 
@@ -23,6 +24,7 @@ export const ACCOUNT_LOGOS: Record<string, string> = {
   DANA:          '💙',
   CASH:          '💵',
   MEGA_SYARIAH:  '💜',
+  'E-WALLET':    '📱',
   OTHER:         '🏛️',
 }
 
@@ -36,6 +38,7 @@ export const ACCOUNT_COLORS: Record<string, string> = {
   DANA:          '#108EE9',
   CASH:          '#6B7280',
   MEGA_SYARIAH:  '#9333EA',
+  'E-WALLET':    '#f59e0b',
   OTHER:         '#94A3B8',
 }
 

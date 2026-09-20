@@ -2,83 +2,91 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-
-interface User {
-  username: string
-  loggedInAt: string
-}
+import { createBrowserClient } from '@supabase/ssr'
+import type { Profile } from '@/types'
 
 interface AuthContextType {
-  user: User | null
+  user: Profile | null
   isLoading: boolean
-  login: (username: string) => void
-  logout: () => void
+  logout: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-const STORAGE_KEY = 'rayfin_auth_user'
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
+  const [user, setUser] = useState<Profile | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const router = useRouter()
   const pathname = usePathname()
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      if (stored) {
-        const parsed = JSON.parse(stored)
-        if (parsed?.username) {
-          setUser(parsed)
-        }
-      } else {
-        // Check if NEXT_PUBLIC_USER_NAME default is configured, auto-login for seamless experience on first load
-        const defaultName = process.env.NEXT_PUBLIC_USER_NAME
-        if (defaultName) {
-          const defaultUser = { username: defaultName, loggedInAt: new Date().toISOString() }
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(defaultUser))
-          setUser(defaultUser)
-        }
-      }
-    } catch (e) {
-      console.error('Failed to parse auth user', e)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [])
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   useEffect(() => {
-    if (!isLoading) {
-      if (!user && pathname !== '/login') {
-        router.push('/login')
-      } else if (user && pathname === '/login') {
-        router.push('/')
+    let mounted = true
+
+    async function loadSession() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          
+          if (mounted && profile) {
+            setUser(profile as Profile)
+          }
+        } else {
+          if (mounted) setUser(null)
+        }
+      } catch (e) {
+        console.error('Failed to load session', e)
+      } finally {
+        if (mounted) setIsLoading(false)
       }
     }
-  }, [user, isLoading, pathname, router])
 
-  const login = (username: string) => {
-    const trimmed = username.trim()
-    if (!trimmed) return
-    const newUser: User = {
-      username: trimmed,
-      loggedInAt: new Date().toISOString(),
+    loadSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+          if (mounted && profile) {
+            setUser(profile as Profile)
+            router.refresh()
+          }
+        } else if (event === 'SIGNED_OUT') {
+          if (mounted) setUser(null)
+          router.refresh()
+        }
+      }
+    )
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newUser))
-    setUser(newUser)
-    router.push('/')
-  }
+  }, [supabase, router])
 
-  const logout = () => {
-    localStorage.removeItem(STORAGE_KEY)
+  const logout = async () => {
+    setIsLoading(true)
+    await supabase.auth.signOut()
     setUser(null)
+    setIsLoading(false)
     router.push('/login')
   }
 
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout }}>
+    <AuthContext.Provider value={{ user, isLoading, logout }}>
       {children}
     </AuthContext.Provider>
   )
