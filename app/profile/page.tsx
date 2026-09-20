@@ -1,22 +1,26 @@
 'use client'
+
 import { useTheme } from 'next-themes'
 import { Switch } from '@/components/ui/switch'
+import { useAuth } from '@/context/AuthContext'
 import { useAccounts } from '@/hooks/useAccounts'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useBudgets } from '@/hooks/useBudgets'
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
 import { RealtimeProvider } from '@/components/dashboard/RealtimeProvider'
 import { formatRupiahCompact } from '@/lib/formatters'
-
-const userName = process.env.NEXT_PUBLIC_USER_NAME || 'Ray'
-const initials = userName.slice(0, 2).toUpperCase()
+import { LogOut, User, Sparkles, ShieldCheck } from 'lucide-react'
 
 export default function ProfilePage() {
   const { theme, setTheme } = useTheme()
+  const { user, logout } = useAuth()
   const { accounts } = useAccounts()
   const { transactions } = useTransactions({ date: new Date(), limit: 100 })
   const { budgets } = useBudgets(new Date())
   const metrics = useDashboardMetrics(accounts, budgets as any, transactions, new Date())
+
+  const displayName = user?.username || process.env.NEXT_PUBLIC_USER_NAME || 'Ray'
+  const initials = displayName.slice(0, 2).toUpperCase()
 
   const totalTxn = transactions.length
   const savingsRate = metrics.totalIncomeThisMonth > 0
@@ -44,11 +48,14 @@ export default function ProfilePage() {
 
         {/* Avatar + name */}
         <div className="flex flex-col items-center px-5 pb-2">
-          <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-[#1b3a4b] to-[#0b525b] border border-white/10 flex items-center justify-center mb-3">
+          <div className="h-20 w-20 rounded-3xl bg-gradient-to-br from-[#1b3a4b] to-[#0b525b] border border-white/10 flex items-center justify-center mb-3 shadow-xl">
             <span className="text-3xl font-black text-[#CCFF00]">{initials}</span>
           </div>
-          <h2 className="text-white text-xl font-bold">{userName}</h2>
-          <p className="text-white/40 text-sm">Personal Finance Tracker</p>
+          <h2 className="text-white text-xl font-bold">{displayName}</h2>
+          <div className="flex items-center gap-1.5 mt-1 text-white/40 text-xs">
+            <ShieldCheck className="h-3.5 w-3.5 text-[#CCFF00]" />
+            <span>Sesi Aktif di Perangkat Ini</span>
+          </div>
         </div>
 
         {/* Health Score */}
@@ -125,6 +132,21 @@ export default function ProfilePage() {
               />
             </div>
 
+            {/* Logout / Switch Account */}
+            <div className="flex items-center justify-between py-4 border-b border-white/5">
+              <div>
+                <p className="text-white text-sm font-medium">Akun Pengguna</p>
+                <p className="text-white/40 text-xs">Login sebagai <span className="text-[#CCFF00] font-semibold">{displayName}</span></p>
+              </div>
+              <button
+                onClick={() => logout()}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#FF85A1]/10 hover:bg-[#FF85A1]/20 text-[#FF85A1] border border-[#FF85A1]/30 text-xs font-bold transition-colors"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Ganti Akun</span>
+              </button>
+            </div>
+
             {/* About */}
             <div className="py-4">
               <p className="text-white text-sm font-medium">Tentang RayFin</p>
@@ -134,12 +156,6 @@ export default function ProfilePage() {
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Future auth note */}
-        <div className="mx-5 bg-[#1b3a4b]/50 border border-white/8 rounded-2xl p-4">
-          <p className="text-[#CCFF00] text-xs font-bold mb-1">🔐 Login/Auth (Coming Soon)</p>
-          <p className="text-white/40 text-xs">Multi-user support dengan Supabase Auth akan ditambahkan di versi berikutnya. Data import/export juga dalam roadmap.</p>
         </div>
       </div>
     </RealtimeProvider>

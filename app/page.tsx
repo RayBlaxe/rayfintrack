@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import { RealtimeProvider } from '@/components/dashboard/RealtimeProvider'
 import { DashboardHeader } from '@/components/dashboard/DashboardHeader'
 import { HeroCard } from '@/components/dashboard/HeroCard'
+import { DailyBudgetCard } from '@/components/dashboard/DailyBudgetCard'
 import { MenuGrid } from '@/components/dashboard/MenuGrid'
 import { NeedsWantsSavings } from '@/components/dashboard/NeedsWantsSavings'
 import { CalendarHeatmap } from '@/components/dashboard/CalendarHeatmap'
@@ -12,9 +13,11 @@ import { HealthScore } from '@/components/dashboard/HealthScore'
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions'
 import { useAccounts } from '@/hooks/useAccounts'
 import { useBudgets } from '@/hooks/useBudgets'
+import { useGoals } from '@/hooks/useGoals'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
 import { useDailyExpenses } from '@/hooks/useDailyExpenses'
+import { useDailyBudgetSettings } from '@/hooks/useDailyBudgetSettings'
 import { NEEDS_CATEGORIES, WANTS_CATEGORIES } from '@/lib/constants'
 
 export default function DashboardPage() {
@@ -23,8 +26,10 @@ export default function DashboardPage() {
 
   const { accounts } = useAccounts()
   const { budgets } = useBudgets(date)
+  const { goals } = useGoals()
   const { transactions } = useTransactions({ date, limit: 200 })
   const { dailyExpenses } = useDailyExpenses(date)
+  const { settings: dailySettings } = useDailyBudgetSettings()
   const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date)
 
   // Today's figures
@@ -34,9 +39,17 @@ export default function DashboardPage() {
       .filter(t => t.transaction_date === todayStr && t.flow_type === 'EXPENSE')
       .reduce((s, t) => s + t.amount, 0)
   , [transactions, todayStr])
+
   const todayIncome = useMemo(() =>
     transactions
       .filter(t => t.transaction_date === todayStr && t.flow_type === 'INCOME')
+      .reduce((s, t) => s + t.amount, 0)
+  , [transactions, todayStr])
+
+  // Food spending today
+  const todayFoodExpense = useMemo(() =>
+    transactions
+      .filter(t => t.transaction_date === todayStr && t.flow_type === 'EXPENSE' && t.category === 'Makanan & Minuman')
       .reduce((s, t) => s + t.amount, 0)
   , [transactions, todayStr])
 
@@ -76,7 +89,14 @@ export default function DashboardPage() {
         transition={{ duration: 0.35 }}
         className="flex flex-col gap-5 pb-8"
       >
-        <DashboardHeader />
+        <DashboardHeader
+          budgets={budgets}
+          accounts={accounts}
+          goals={goals}
+          todayFoodExpense={todayFoodExpense}
+          foodDailyLimit={dailySettings.foodDailyLimit}
+          safeToSpendDaily={metrics.safeToSpendDaily ?? 0}
+        />
 
         <HeroCard
           safeToSpendDaily={metrics.safeToSpendDaily ?? 0}
@@ -85,6 +105,15 @@ export default function DashboardPage() {
           monthExpense={metrics.totalExpenseThisMonth}
           monthIncome={metrics.totalIncomeThisMonth}
         />
+
+        {/* Daily Budget Tracker Widget */}
+        <div className="px-5">
+          <DailyBudgetCard
+            todayFoodExpense={todayFoodExpense}
+            todayTotalExpense={todayExpense}
+            safeToSpendDaily={metrics.safeToSpendDaily ?? 0}
+          />
+        </div>
 
         <MenuGrid />
 
