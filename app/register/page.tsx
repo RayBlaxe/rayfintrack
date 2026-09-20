@@ -37,22 +37,28 @@ function RegisterForm() {
     const password = `RayFin!${formattedUsername}2026`
 
     try {
-      // 1. Sign up user
+      // 1. Sign up user via Server API (Bypasses Email Confirmation & Rate Limits)
       setStep(2)
-      const { data: authData, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: { username: username.trim() }
-        }
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, username: username.trim() })
       })
+      const data = await res.json()
 
-      if (signUpError) throw signUpError
-      
-      const userId = authData.user?.id
+      if (!res.ok) throw new Error(data.error || 'Gagal membuat akun')
+
+      const userId = data.user?.id
       if (!userId) throw new Error('Gagal mendapatkan ID user baru')
 
-      // 2. Seed Default Accounts
+      // 2. Langsung Login agar mendapat sesi di browser
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
+      if (signInError) throw signInError
+
+      // 3. Seed Default Accounts
       setStep(3)
       const defaultAccounts = ['BCA', 'CIMB_NIAGA', 'CIMB_OCTO_PAY', 'SEABANK', 'SHOPEEPAY', 'GOPAY', 'DANA', 'CASH', 'MEGA_SYARIAH', 'E-WALLET', 'OTHER']
       const accountsToInsert = defaultAccounts.map(name => ({
