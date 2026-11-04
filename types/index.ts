@@ -1,8 +1,11 @@
 export type FlowType = 'EXPENSE' | 'INCOME' | 'TRANSFER_INTERNAL'
 
+
 export type AccountName =
   | 'BCA' | 'CIMB_NIAGA' | 'CIMB_OCTO_PAY' | 'SEABANK'
-  | 'SHOPEEPAY' | 'GOPAY' | 'DANA' | 'CASH' | 'MEGA_SYARIAH' | 'E-WALLET' | 'OTHER'
+  | 'SHOPEEPAY' | 'GOPAY' | 'DANA' | 'CASH'
+  | 'MEGA_SYARIAH' | 'HONEST_CARD' | 'STOCKBIT'
+  | 'E-WALLET' | 'OTHER'
 
 export type GoalCategory = 'EMERGENCY' | 'ASSET' | 'DREAM' | 'EDUCATION' | 'TRAVEL' | 'OTHER'
 export type AssetType = 'LIKUID' | 'TETAP' | 'INVESTASI'
