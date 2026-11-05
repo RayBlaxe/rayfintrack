@@ -13,11 +13,11 @@ function AppShellContent({ children }: Props) {
   const isAuthPage = pathname === '/login' || pathname === '/register'
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-50 flex justify-center transition-colors">
-      {/* Phone-width container */}
-      <div className="relative w-full max-w-[480px] min-h-screen bg-slate-50 dark:bg-[#090D16] border-x border-slate-200/70 dark:border-white/5 transition-colors">
+    <div className="min-h-dvh w-full bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-50 flex justify-center transition-colors">
+      {/* Responsive Fluid Container: 100% width on mobile, centered max-w on tablet/desktop */}
+      <div className="relative w-full max-w-full md:max-w-2xl lg:max-w-4xl min-h-dvh bg-slate-50 dark:bg-[#090D16] md:border-x border-slate-200/70 dark:border-slate-800/60 transition-colors">
         {/* Scrollable main content with bottom padding for FloatingDock */}
-        <main className={isAuthPage ? '' : 'pb-32'}>
+        <main className={isAuthPage ? '' : 'pb-32 pt-[env(safe-area-inset-top)]'}>
           {children}
         </main>
         {/* Floating dock only on non-auth pages */}

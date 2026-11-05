@@ -1,12 +1,15 @@
 {
+  "id": "/",
   "name": "RayFin – Personal Finance",
   "short_name": "RayFin",
   "description": "Personal Expense & Budget Tracker",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#090D16",
   "theme_color": "#059669",
   "orientation": "portrait-primary",
+  "prefer_related_applications": false,
   "categories": ["finance", "productivity"],
   "icons": [
     {
@@ -43,6 +46,11 @@
       "name": "Dompet & Aset",
       "url": "/wallets",
       "description": "Kelola rekening dan aset"
+    },
+    {
+      "name": "Insights",
+      "url": "/insights",
+      "description": "Financial Insights & Pos Pengeluaran"
     }
   ]
 }

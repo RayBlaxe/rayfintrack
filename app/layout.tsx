@@ -4,6 +4,7 @@ import { ThemeProvider } from 'next-themes'
 import './globals.css'
 import { AppShell } from '@/components/layout/AppShell'
 import { ServiceWorkerRegister } from '@/components/shared/ServiceWorkerRegister'
+import { InstallPromptBanner } from '@/components/pwa/InstallPromptBanner'
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' })
 
@@ -28,6 +29,8 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
+  interactiveWidget: 'resizes-content',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -46,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           disableTransitionOnChange={false}
         >
           <ServiceWorkerRegister />
+          <InstallPromptBanner />
           <AppShell>{children}</AppShell>
         </ThemeProvider>
       </body>

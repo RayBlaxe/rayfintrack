@@ -9,6 +9,7 @@ export type AccountName =
 
 export type GoalCategory = 'EMERGENCY' | 'ASSET' | 'DREAM' | 'EDUCATION' | 'TRAVEL' | 'OTHER'
 export type AssetType = 'LIKUID' | 'TETAP' | 'INVESTASI'
+export type AssetStatus = 'AKTIF' | 'TERJUAL' | 'DILIKUIDASI'
 
 export interface Profile {
   id: string
@@ -97,6 +98,7 @@ export interface Asset {
   value: number
   account_id: string | null
   notes: string | null
+  status?: AssetStatus
   created_at: string
   updated_at: string
 }

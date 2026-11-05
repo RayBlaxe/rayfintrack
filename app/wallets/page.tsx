@@ -1,4 +1,5 @@
 'use client'
+
 import { useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
 import { RealtimeProvider } from '@/components/dashboard/RealtimeProvider'
@@ -8,12 +9,14 @@ import { useAccounts } from '@/hooks/useAccounts'
 import { useAssets } from '@/hooks/useAssets'
 import { useTransactions } from '@/hooks/useTransactions'
 import { ASSET_TYPE_LABELS, ASSET_TYPE_COLORS } from '@/lib/constants'
-import { formatRupiahCompact } from '@/lib/formatters'
-
-import { Plus, Trash2 } from 'lucide-react'
+import { formatRupiah, formatRupiahCompact } from '@/lib/formatters'
+import { Plus, Trash2, Pencil, Handshake, AlertCircle } from 'lucide-react'
 import { AddAssetModal } from '@/components/wallets/AddAssetModal'
+import { EditAssetModal } from '@/components/wallets/EditAssetModal'
+import { ReconcileBalanceModal } from '@/components/wallets/ReconcileBalanceModal'
 import { deleteAsset } from '@/lib/queries'
 import { triggerRefresh } from '@/lib/realtimeEvents'
+import { Asset, Account } from '@/types'
 
 type Tab = 'all' | 'liquid' | 'asset' | 'debt'
 
@@ -21,13 +24,16 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'all',    label: 'Semua' },
   { key: 'liquid', label: 'Dompet' },
   { key: 'asset',  label: 'Aset' },
-  { key: 'debt',   label: 'Utang/CC' },
+  { key: 'debt',   label: 'Utang & Kewajiban' },
 ]
 
 export default function WalletsPage() {
   const [tab, setTab] = useState<Tab>('all')
   const [assetModalOpen, setAssetModalOpen] = useState(false)
-  const { accounts, loading: accLoading } = useAccounts()
+  const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
+  const [reconcilingAccount, setReconcilingAccount] = useState<Account | null>(null)
+
+  const { accounts, loading: accLoading, refetch: refetchAccounts } = useAccounts()
   const { assets, refetch: refetchAssets } = useAssets()
   const { transactions } = useTransactions({ date: new Date(), limit: 60 })
 
@@ -98,23 +104,56 @@ export default function WalletsPage() {
               title="💵 Saldo & Tabungan"
               accounts={accounts}
               showCC={false}
+              onSelectAccount={setReconcilingAccount}
             />
           )}
 
           {(tab === 'all' || tab === 'debt') && (
-            <AccountGroup
-              title="💳 Kartu Kredit & Cicilan"
-              accounts={accounts}
-              showCC={true}
-            />
+            <>
+              {/* Personal Liability Tracker: Josep Rp 100.000 */}
+              <div className="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Handshake className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-50">
+                      Pinjaman Personal (Liability Tracker)
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40">
+                    JATUH TEMPO GAJIAN
+                  </span>
+                </div>
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Josep</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                      Dana masuk BCA 27 Mar 2026 (RAYFIN-2026-0327). Wajib dibayar saat payroll/PDDN cair.
+                    </p>
+                  </div>
+                  <p className="text-lg font-black font-mono text-amber-600 dark:text-amber-400">
+                    Rp 100.000
+                  </p>
+                </div>
+              </div>
+
+              <AccountGroup
+                title="💳 Kartu Kredit & Cicilan"
+                accounts={accounts}
+                showCC={true}
+                onSelectAccount={setReconcilingAccount}
+              />
+            </>
           )}
 
           {/* Assets */}
           {(tab === 'all' || tab === 'asset') && Object.entries(assetsByType).map(([type, items]) => (
             <div key={type} className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none overflow-hidden">
-              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
-                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ASSET_TYPE_COLORS[type] }} />
-                <h3 className="text-slate-900 dark:text-slate-100 font-bold text-sm">{ASSET_TYPE_LABELS[type] ?? type}</h3>
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ASSET_TYPE_COLORS[type] }} />
+                  <h3 className="text-slate-900 dark:text-slate-100 font-bold text-sm">{ASSET_TYPE_LABELS[type] ?? type}</h3>
+                </div>
+                <span className="text-xs text-slate-500 dark:text-slate-400 font-semibold">{items.length} Aset</span>
               </div>
               <div className="px-5 divide-y divide-slate-100 dark:divide-slate-800/60">
                 {items.map((a, i) => (
@@ -123,14 +162,28 @@ export default function WalletsPage() {
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="flex items-center justify-between py-3.5"
+                    className="flex items-center justify-between py-3.5 group"
                   >
                     <div>
-                      <p className="text-slate-900 dark:text-slate-100 text-sm font-semibold">{a.asset_name}</p>
+                      <div className="flex items-center gap-2">
+                        <p className="text-slate-900 dark:text-slate-100 text-sm font-semibold">{a.asset_name}</p>
+                        {a.status && a.status !== 'AKTIF' && (
+                          <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                            {a.status}
+                          </span>
+                        )}
+                      </div>
                       {a.notes && <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{a.notes}</p>}
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 sm:gap-3">
                       <p className="text-slate-900 dark:text-slate-100 font-bold font-mono text-sm">{formatRupiahCompact(a.value)}</p>
+                      <button
+                        onClick={() => setEditingAsset(a)}
+                        className="text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors p-1"
+                        title="Edit aset"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                       <button
                         onClick={() => handleDeleteAsset(a.id, a.asset_name)}
                         className="text-slate-400 hover:text-rose-500 dark:text-slate-500 dark:hover:text-rose-400 transition-colors p-1"
@@ -162,10 +215,27 @@ export default function WalletsPage() {
         </div>
       </div>
 
+      {/* Add Asset Modal */}
       <AddAssetModal
         open={assetModalOpen}
         onClose={() => setAssetModalOpen(false)}
         onCreated={refetchAssets}
+      />
+
+      {/* Edit Asset Modal */}
+      <EditAssetModal
+        asset={editingAsset}
+        open={!!editingAsset}
+        onClose={() => setEditingAsset(null)}
+        onSaved={refetchAssets}
+      />
+
+      {/* Reconcile Account Balance Modal */}
+      <ReconcileBalanceModal
+        account={reconcilingAccount}
+        open={!!reconcilingAccount}
+        onClose={() => setReconcilingAccount(null)}
+        onSaved={refetchAccounts}
       />
     </RealtimeProvider>
   )

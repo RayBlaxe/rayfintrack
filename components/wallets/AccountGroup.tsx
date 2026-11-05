@@ -5,14 +5,24 @@ import { Account } from '@/types'
 import { ACCOUNT_LABELS, ACCOUNT_LOGOS, ACCOUNT_COLORS, CREDIT_CARD_ACCOUNTS } from '@/lib/constants'
 import { formatRupiah } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
+import { SlidersHorizontal } from 'lucide-react'
 
 interface Props {
   title: string
   accounts: Account[]
   showCC?: boolean
+  onSelectAccount?: (account: Account) => void
 }
 
-function AccountRow({ account, index }: { account: Account; index: number }) {
+function AccountRow({
+  account,
+  index,
+  onSelect,
+}: {
+  account: Account
+  index: number
+  onSelect?: (account: Account) => void
+}) {
   const isCC = CREDIT_CARD_ACCOUNTS.includes(account.account_name)
   const isNegative = account.current_balance < 0
   const color = ACCOUNT_COLORS[account.account_name] ?? '#10B981'
@@ -23,8 +33,8 @@ function AccountRow({ account, index }: { account: Account; index: number }) {
     <motion.div
       initial={{ opacity: 0, x: -10 }}
       animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.04 }}
-      className="flex items-center gap-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 last:border-0"
+      transition={{ delay: index * 0.03 }}
+      className="flex items-center gap-3 sm:gap-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 last:border-0 group"
     >
       {/* Logo circle */}
       <div
@@ -44,24 +54,37 @@ function AccountRow({ account, index }: { account: Account; index: number }) {
       </div>
 
       <div className="text-right">
-        <p className={cn(
-          'text-sm font-bold font-mono tracking-tight',
-          isNegative ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-slate-50'
-        )}>
+        <p
+          className={cn(
+            'text-sm font-bold font-mono tracking-tight',
+            isNegative ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-slate-50'
+          )}
+        >
           {formatRupiah(account.current_balance)}
         </p>
         {isCC && isNegative && (
           <p className="text-[10px] font-semibold text-rose-500 dark:text-rose-400">Tagihan Terutang</p>
         )}
       </div>
+
+      {/* Adjust Button */}
+      {onSelect && (
+        <button
+          onClick={() => onSelect(account)}
+          title="Kalibrasi / Readjust Saldo"
+          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-1"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+        </button>
+      )}
     </motion.div>
   )
 }
 
-export function AccountGroup({ title, accounts, showCC = false }: Props) {
+export function AccountGroup({ title, accounts, showCC = false, onSelectAccount }: Props) {
   const filtered = showCC
-    ? accounts.filter(a => CREDIT_CARD_ACCOUNTS.includes(a.account_name))
-    : accounts.filter(a => !CREDIT_CARD_ACCOUNTS.includes(a.account_name))
+    ? accounts.filter((a) => CREDIT_CARD_ACCOUNTS.includes(a.account_name))
+    : accounts.filter((a) => !CREDIT_CARD_ACCOUNTS.includes(a.account_name))
 
   if (filtered.length === 0) return null
 
@@ -72,7 +95,9 @@ export function AccountGroup({ title, accounts, showCC = false }: Props) {
         <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{filtered.length} Akun</span>
       </div>
       <div className="px-5">
-        {filtered.map((a, i) => <AccountRow key={a.id} account={a} index={i} />)}
+        {filtered.map((a, i) => (
+          <AccountRow key={a.id} account={a} index={i} onSelect={onSelectAccount} />
+        ))}
       </div>
     </div>
   )

@@ -187,5 +187,5 @@ export const MENU_ITEMS: { icon: string; label: string; href: string }[] = [
   { icon: '📷', label: 'Scan Struk', href: '/scanner' },
   { icon: '🤖', label: 'AI Advisor', href: '/advisor' },
   { icon: '👤', label: 'Profil', href: '/profile' },
-  { icon: '💡', label: 'Insights', href: '/reports' },
+  { icon: '💡', label: 'Insights', href: '/insights' },
 ]

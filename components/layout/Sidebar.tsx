@@ -11,6 +11,7 @@ import {
   Camera,
   Bot,
   User,
+  Lightbulb,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { href: '/wallets', label: 'Dompet & Aset', icon: Wallet },
   { href: '/transactions', label: 'Transaksi', icon: ArrowLeftRight },
   { href: '/budgets', label: 'Budget', icon: PieChart },
+  { href: '/insights', label: 'Financial Insights', icon: Lightbulb },
   { href: '/goals', label: 'Target Finansial', icon: Target },
   { href: '/scanner', label: 'Scan Struk', icon: Camera },
   { href: '/advisor', label: 'AI Advisor', icon: Bot },

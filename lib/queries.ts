@@ -123,6 +123,66 @@ export async function insertClientTransaction(
   return data
 }
 
+export async function updateTransaction(
+  id: string,
+  updates: Partial<Transaction>
+): Promise<Transaction> {
+  const sb = getSupabaseClient()
+  const { data, error } = await sb
+    .from('transactions')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteTransactionWithSnapshot(
+  id: string
+): Promise<Transaction> {
+  const sb = getSupabaseClient()
+  // 1. Get snapshot first for potential undo
+  const { data: snapshot, error: fetchErr } = await sb
+    .from('transactions')
+    .select('*')
+    .eq('id', id)
+    .single()
+  if (fetchErr || !snapshot) throw new Error('Transaksi tidak ditemukan')
+
+  // 2. Delete transaction (trigger trg_sync_account_balance will automatically rollback balance in accounts)
+  const { error: delErr } = await sb.from('transactions').delete().eq('id', id)
+  if (delErr) throw delErr
+
+  return snapshot as Transaction
+}
+
+export async function restoreTransaction(
+  snapshot: Transaction
+): Promise<Transaction> {
+  const sb = getSupabaseClient()
+  // Re-inserting the snapshot triggers trg_sync_account_balance to apply balance back
+  const { data, error } = await sb
+    .from('transactions')
+    .insert(snapshot)
+    .select()
+    .single()
+  if (error) throw error
+  return data as Transaction
+}
+
+export async function reconcileAccountBalance(
+  accountName: string,
+  newBalance: number
+): Promise<void> {
+  const sb = getSupabaseClient()
+  const { error } = await sb
+    .from('accounts')
+    .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
+    .eq('account_name', accountName)
+  if (error) throw error
+}
+
 export async function insertGoal(goal: {
   title: string
   target_amount: number
@@ -164,6 +224,21 @@ export async function insertAsset(asset: {
   const { data, error } = await sb
     .from('assets')
     .insert(asset)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateAsset(
+  id: string,
+  updates: Partial<Asset>
+): Promise<Asset> {
+  const sb = getSupabaseClient()
+  const { data, error } = await sb
+    .from('assets')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', id)
     .select()
     .single()
   if (error) throw error
