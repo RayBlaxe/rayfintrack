@@ -75,6 +75,20 @@ export interface CategorySpending {
 
 // ── New types ─────────────────────────────────────────────
 
+export interface PersonalLiability {
+  id: string
+  creditor_name: string
+  title: string
+  principal_amount: number
+  remaining_amount: number
+  due_date_label?: string
+  status: 'ACTIVE' | 'PAID'
+  created_at: string
+  settled_at?: string | null
+  source_account?: string
+  notes?: string
+}
+
 export interface Goal {
   id: string
   user_id?: string

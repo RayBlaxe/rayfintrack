@@ -14,6 +14,7 @@ import { Plus, Trash2, Pencil, Handshake, AlertCircle } from 'lucide-react'
 import { AddAssetModal } from '@/components/wallets/AddAssetModal'
 import { EditAssetModal } from '@/components/wallets/EditAssetModal'
 import { ReconcileBalanceModal } from '@/components/wallets/ReconcileBalanceModal'
+import { PersonalLiabilitiesCard } from '@/components/wallets/PersonalLiabilitiesCard'
 import { deleteAsset } from '@/lib/queries'
 import { triggerRefresh } from '@/lib/realtimeEvents'
 import { Asset, Account } from '@/types'
@@ -110,31 +111,8 @@ export default function WalletsPage() {
 
           {(tab === 'all' || tab === 'debt') && (
             <>
-              {/* Personal Liability Tracker: Josep Rp 100.000 */}
-              <div className="p-5 rounded-3xl bg-amber-500/10 border border-amber-500/30 text-amber-900 dark:text-amber-200 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Handshake className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-50">
-                      Pinjaman Personal (Liability Tracker)
-                    </h3>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/40">
-                    JATUH TEMPO GAJIAN
-                  </span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">Josep</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-                      Dana masuk BCA 27 Mar 2026 (RAYFIN-2026-0327). Wajib dibayar saat payroll/PDDN cair.
-                    </p>
-                  </div>
-                  <p className="text-lg font-black font-mono text-amber-600 dark:text-amber-400">
-                    Rp 100.000
-                  </p>
-                </div>
-              </div>
+              {/* Interactive Personal Liabilities Tracker */}
+              <PersonalLiabilitiesCard accounts={accounts} onRefreshAccounts={refetchAccounts} />
 
               <AccountGroup
                 title="💳 Kartu Kredit & Cicilan"

@@ -20,15 +20,17 @@ import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
 import { useDailyExpenses } from '@/hooks/useDailyExpenses'
 import { useDailyBudgetSettings } from '@/hooks/useDailyBudgetSettings'
 import { NEEDS_CATEGORIES, WANTS_CATEGORIES } from '@/lib/constants'
+import { compute503020, computeFinancialHealthScore } from '@/lib/financialEngine'
+import { getPersonalLiabilities } from '@/lib/liabilities'
 
 export default function DashboardPage() {
   const [date, setDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
-  const { accounts } = useAccounts()
-  const { budgets } = useBudgets(date)
+  const { accounts, refetch: refetchAccounts } = useAccounts()
+  const { budgets, refetch: refetchBudgets } = useBudgets(date)
   const { goals } = useGoals()
-  const { transactions } = useTransactions({ date, limit: 200 })
+  const { transactions, refetch: refetchTransactions } = useTransactions({ date, limit: 200 })
   const { dailyExpenses } = useDailyExpenses(date)
   const { settings: dailySettings } = useDailyBudgetSettings()
   const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date)
@@ -56,26 +58,60 @@ export default function DashboardPage() {
       .reduce((s, t) => s + t.amount, 0)
   , [transactions, todayStr])
 
-  // 50/30/20 split
+  // Categorized expenses
   const expenseOnly = useMemo(() => transactions.filter(t => t.flow_type === 'EXPENSE'), [transactions])
   const needsTotal  = useMemo(() => expenseOnly.filter(t => NEEDS_CATEGORIES.includes(t.category)).reduce((s, t) => s + t.amount, 0), [expenseOnly])
   const wantsTotal  = useMemo(() => expenseOnly.filter(t => WANTS_CATEGORIES.includes(t.category)).reduce((s, t) => s + t.amount, 0), [expenseOnly])
-  const savingsTotal = useMemo(() => Math.max(metrics.totalIncomeThisMonth - metrics.totalExpenseThisMonth, 0), [metrics])
+
+  const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+
+  // 50/30/20 calculation with Hybrid Baseline Denominator (B_eff)
+  const budget503020 = useMemo(() => {
+    return compute503020(
+      needsTotal,
+      wantsTotal,
+      metrics.totalBudgetThisMonth,
+      metrics.totalIncomeThisMonth,
+      date.getDate(),
+      daysInMonth
+    )
+  }, [needsTotal, wantsTotal, metrics.totalBudgetThisMonth, metrics.totalIncomeThisMonth, date, daysInMonth])
 
   // Budget discipline score (0–100)
   const budgetDiscipline = useMemo(() =>
-    metrics.totalBudgetThisMonth > 0
-      ? Math.max(100 - Math.max((metrics.totalExpenseThisMonth / metrics.totalBudgetThisMonth) * 100 - 100, 0), 0)
+    budget503020.effectiveBaseline > 0
+      ? Math.max(100 - Math.max((metrics.totalExpenseThisMonth / budget503020.effectiveBaseline) * 100 - 100, 0), 0)
       : 50
-  , [metrics])
+  , [metrics.totalExpenseThisMonth, budget503020.effectiveBaseline])
 
-  const savingsRate = useMemo(() =>
-    metrics.totalIncomeThisMonth > 0
-      ? ((metrics.totalIncomeThisMonth - metrics.totalExpenseThisMonth) / metrics.totalIncomeThisMonth) * 100
-      : 0
-  , [metrics])
+  // Active Personal Debt (Josep etc.)
+  const personalDebts = useMemo(() => {
+    if (typeof window === 'undefined') return 100000
+    const list = getPersonalLiabilities()
+    return list.filter(l => l.status === 'ACTIVE').reduce((s, l) => s + l.remaining_amount, 0)
+  }, [])
 
-  const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()
+  // 4-Pillar Composite Financial Health Score
+  const healthResult = useMemo(() => {
+    return computeFinancialHealthScore(
+      needsTotal,
+      wantsTotal,
+      metrics.totalExpenseThisMonth,
+      budget503020.effectiveBaseline,
+      metrics.liquidAssets,
+      metrics.ccDebt,
+      personalDebts,
+      14779200 // Total non-liquid assets (MacBook 14jt + Stock equity 779k)
+    )
+  }, [
+    needsTotal,
+    wantsTotal,
+    metrics.totalExpenseThisMonth,
+    budget503020.effectiveBaseline,
+    metrics.liquidAssets,
+    metrics.ccDebt,
+    personalDebts,
+  ])
 
   // Filtered transactions by calendar click
   const filteredTransactions = useMemo(() =>
@@ -83,6 +119,12 @@ export default function DashboardPage() {
       ? transactions.filter(t => t.transaction_date === selectedDate)
       : transactions.slice(0, 10)
   , [transactions, selectedDate])
+
+  function handleRefreshAll() {
+    refetchAccounts()
+    refetchBudgets()
+    refetchTransactions()
+  }
 
   return (
     <RealtimeProvider>
@@ -129,10 +171,15 @@ export default function DashboardPage() {
           <NeedsWantsSavings
             needsAmount={needsTotal}
             wantsAmount={wantsTotal}
-            savingsAmount={savingsTotal}
+            savingsAmount={budget503020.savingsAmount}
             totalIncome={metrics.totalIncomeThisMonth}
             daysInMonth={daysInMonth}
             currentDay={date.getDate()}
+            totalBudgetLimit={metrics.totalBudgetThisMonth}
+            effectiveBaseline={budget503020.effectiveBaseline}
+            baselineSource={budget503020.baselineSource}
+            needsPacingStatus={budget503020.needsPacingStatus}
+            onRefresh={handleRefreshAll}
           />
         </div>
 
@@ -149,10 +196,15 @@ export default function DashboardPage() {
         <div className="px-5">
           <HealthScore
             netWorth={metrics.netWorth}
-            savingsRate={savingsRate}
+            savingsRate={budget503020.savingsPctOfBaseline}
             budgetDiscipline={budgetDiscipline}
             liquidAssets={metrics.liquidAssets}
-            avgMonthlyExpense={metrics.totalExpenseThisMonth || 1}
+            avgMonthlyExpense={budget503020.effectiveBaseline}
+            compositeScore={healthResult.score}
+            compositeLabel={healthResult.label}
+            compositeColor={healthResult.color}
+            compositeBg={healthResult.bg}
+            scoreBreakdown={healthResult.breakdown}
           />
         </div>
 
