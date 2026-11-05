@@ -45,21 +45,21 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: index * 0.07 }}
+        transition={{ delay: index * 0.05 }}
         className={cn(
-          'bg-[#161B22] rounded-3xl p-5 border border-white/8',
-          goal.is_achieved && 'border-[#CCFF00]/30'
+          'bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors',
+          goal.is_achieved && 'border-emerald-500/80 bg-emerald-50/20 dark:bg-emerald-950/20'
         )}
       >
         <div className="flex items-start gap-4">
           {/* Circular progress */}
           <div className="relative flex-shrink-0">
             <svg width="72" height="72" viewBox="0 0 72 72" className="-rotate-90">
-              <circle cx="36" cy="36" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="5" />
+              <circle cx="36" cy="36" r={r} fill="none" stroke="currentColor" className="text-slate-200 dark:text-slate-800" strokeWidth="5" />
               <motion.circle
                 cx="36" cy="36" r={r}
                 fill="none"
-                stroke={goal.is_achieved ? '#CCFF00' : '#CCFF00'}
+                stroke="#10B981"
                 strokeWidth="5"
                 strokeLinecap="round"
                 strokeDasharray={circ}
@@ -76,20 +76,21 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div>
-                <p className="text-white font-bold text-sm leading-tight">{goal.title}</p>
-                <p className="text-white/40 text-xs mt-0.5">{GOAL_CATEGORY_LABELS[goal.category] ?? goal.category}</p>
+                <p className="text-slate-900 dark:text-slate-50 font-bold text-sm leading-tight">{goal.title}</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{GOAL_CATEGORY_LABELS[goal.category] ?? goal.category}</p>
               </div>
               <div className="flex items-center gap-1">
                 {goal.is_achieved && (
-                  <CheckCircle2 className="h-5 w-5 text-[#CCFF00] flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
                 )}
                 {onDelete && (
                   <button
+                    type="button"
                     onClick={() => onDelete(goal.id, goal.title)}
-                    className="text-white/20 hover:text-[#FF85A1] transition-colors p-1"
+                    className="text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors p-1"
                     title="Hapus goal"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 )}
               </div>
@@ -98,15 +99,15 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
             {/* Progress text */}
             <div className="mt-3">
               <div className="flex items-baseline gap-1.5">
-                <span className="text-[#CCFF00] font-black text-lg">{formatRupiahCompact(goal.current_amount)}</span>
-                <span className="text-white/40 text-xs">/ {formatRupiahCompact(goal.target_amount)}</span>
-                <span className="ml-auto text-white/60 text-sm font-bold">{pct.toFixed(0)}%</span>
+                <span className="text-emerald-700 dark:text-emerald-400 font-black font-mono text-lg">{formatRupiahCompact(goal.current_amount)}</span>
+                <span className="text-slate-500 dark:text-slate-400 font-mono text-xs">/ {formatRupiahCompact(goal.target_amount)}</span>
+                <span className="ml-auto text-slate-700 dark:text-slate-300 text-xs font-bold font-mono">{pct.toFixed(0)}%</span>
               </div>
 
               {/* Progress bar */}
-              <div className="h-1.5 bg-white/8 rounded-full mt-2 overflow-hidden">
+              <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
                 <motion.div
-                  className="h-full bg-[#CCFF00] rounded-full"
+                  className="h-full bg-emerald-600 dark:bg-emerald-500 rounded-full"
                   initial={{ width: 0 }}
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 1, delay: index * 0.1 + 0.3, ease: 'easeOut' }}
@@ -119,17 +120,17 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
               <div className="flex items-center gap-2">
                 {daysLeft !== null && (
                   <div className="flex items-center gap-1">
-                    <Clock className="h-3 w-3 text-white/30" />
+                    <Clock className="h-3 w-3 text-slate-400" />
                     <span className={cn(
-                      'text-xs',
-                      daysLeft < 30 ? 'text-[#FF85A1]' : 'text-white/40'
+                      'text-xs font-medium',
+                      daysLeft < 30 ? 'text-red-600 dark:text-red-400 font-semibold' : 'text-slate-500 dark:text-slate-400'
                     )}>
-                      {daysLeft > 0 ? `${daysLeft} hari` : 'Lewat'}
+                      {daysLeft > 0 ? `${daysLeft} hari lagi` : 'Jatuh tempo lewat'}
                     </span>
                   </div>
                 )}
                 {!goal.is_achieved && (
-                  <span className="text-white/30 text-xs">
+                  <span className="text-slate-500 dark:text-slate-400 text-xs">
                     Sisa {formatRupiahCompact(remaining)}
                   </span>
                 )}
@@ -137,8 +138,9 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
 
               {!goal.is_achieved && (
                 <button
+                  type="button"
                   onClick={() => setTopUpOpen(true)}
-                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/8 hover:bg-[#CCFF00] text-white/80 hover:text-black text-xs font-semibold transition-all border border-white/10"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-slate-100 hover:bg-emerald-600 hover:text-white dark:bg-slate-800 dark:hover:bg-emerald-500 dark:hover:text-slate-950 text-slate-800 dark:text-slate-200 text-xs font-bold transition-all border border-slate-300 dark:border-slate-700"
                 >
                   <Plus className="h-3 w-3" />
                   <span>Tabung</span>
@@ -151,14 +153,14 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
 
       {/* Top up modal */}
       <Dialog open={topUpOpen} onOpenChange={(v) => !v && setTopUpOpen(false)}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Setor Tabungan: {goal.title}</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-slate-50 font-bold">Setor Tabungan: {goal.title}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSaveTopUp} className="space-y-4">
             <div>
-              <p className="text-white/50 text-xs mb-1">Terkumpul saat ini: {formatRupiah(goal.current_amount)}</p>
-              <p className="text-white/40 text-xs mb-3">Target: {formatRupiah(goal.target_amount)}</p>
+              <p className="text-slate-600 dark:text-slate-400 text-xs mb-1">Terkumpul saat ini: <span className="font-bold text-slate-900 dark:text-slate-100">{formatRupiah(goal.current_amount)}</span></p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs mb-3">Target total: <span className="font-bold text-slate-900 dark:text-slate-100">{formatRupiah(goal.target_amount)}</span></p>
               <Input
                 type="number"
                 min="1000"
@@ -171,7 +173,7 @@ export function GoalCard({ goal, index, onUpdateAmount, onDelete }: Props) {
             </div>
             <button
               type="submit"
-              className="w-full py-3 rounded-2xl bg-[#CCFF00] text-black font-bold text-sm hover:opacity-90"
+              className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-slate-950 font-bold text-sm shadow-md transition-all active:scale-[0.99]"
             >
               Simpan Tabungan ✨
             </button>

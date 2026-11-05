@@ -2,30 +2,48 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutDashboard, ArrowLeftRight, PieChart, Wallet } from 'lucide-react'
+import {
+  LayoutDashboard,
+  ArrowLeftRight,
+  PieChart,
+  Wallet,
+  Target,
+  Camera,
+  Bot,
+  User,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { ThemeToggle } from '@/components/shared/ThemeToggle'
 
 const NAV_ITEMS = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/wallets', label: 'Dompet & Aset', icon: Wallet },
   { href: '/transactions', label: 'Transaksi', icon: ArrowLeftRight },
   { href: '/budgets', label: 'Budget', icon: PieChart },
+  { href: '/goals', label: 'Target Finansial', icon: Target },
+  { href: '/scanner', label: 'Scan Struk', icon: Camera },
+  { href: '/advisor', label: 'AI Advisor', icon: Bot },
+  { href: '/profile', label: 'Profil Saya', icon: User },
 ]
 
 export function Sidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="hidden md:flex flex-col w-60 min-h-screen bg-white border-r border-slate-200 fixed left-0 top-0 z-40">
+    <aside className="hidden md:flex flex-col w-64 min-h-screen bg-white dark:bg-[#111827] border-r border-slate-200 dark:border-slate-800 fixed left-0 top-0 z-40 transition-colors">
       {/* Brand */}
-      <div className="flex items-center gap-2 px-6 py-5 border-b border-slate-100">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600">
-          <Wallet className="h-4 w-4 text-white" />
+      <div className="flex items-center gap-2.5 px-6 py-5 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600 dark:bg-emerald-500 shadow-sm shadow-emerald-500/20">
+          <Wallet className="h-5 w-5 text-white dark:text-slate-950" />
         </div>
-        <span className="font-bold text-lg text-slate-800">RayFin</span>
+        <div>
+          <span className="font-bold text-lg text-slate-900 dark:text-slate-50 tracking-tight">RayFin</span>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium -mt-1">Wealth & Expense</p>
+        </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
         {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
           const active = pathname === href
           return (
@@ -33,22 +51,28 @@ export function Sidebar() {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all',
+                'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all',
                 active
-                  ? 'bg-indigo-50 text-indigo-700'
-                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                  ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800/60 hover:text-slate-900 dark:hover:text-slate-100'
               )}
             >
-              <Icon className={cn('h-4 w-4', active && 'text-indigo-600')} />
-              {label}
+              <Icon className={cn('h-4 w-4', active ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500')} />
+              <span>{label}</span>
             </Link>
           )
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-slate-100">
-        <p className="text-xs text-slate-400 text-center">Personal Finance Tracker</p>
+      {/* Footer with Theme Switcher */}
+      <div className="p-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-slate-500 dark:text-slate-400">Tampilan</span>
+          <ThemeToggle size="sm" showLabel />
+        </div>
+        <p className="text-[11px] text-slate-400 dark:text-slate-500 text-center">
+          RayFin Personal Finance v2.0
+        </p>
       </div>
     </aside>
   )

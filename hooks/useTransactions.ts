@@ -15,7 +15,7 @@ interface UseTransactionsOptions {
 }
 
 export function useTransactions(options: UseTransactionsOptions = {}) {
-  const { date = new Date(), category, flowType, limit = 20, recent = false } = options
+  const { date = new Date(), category, flowType, limit = 500, recent = false } = options
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(true)

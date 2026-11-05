@@ -2,6 +2,7 @@
 
 import { Wallet } from 'lucide-react'
 import { MonthPicker } from '@/components/shared/MonthPicker'
+import { ThemeToggle } from '@/components/shared/ThemeToggle'
 
 interface Props {
   date: Date
@@ -11,14 +12,18 @@ interface Props {
 
 export function Header({ date, onDateChange, title = 'Dashboard' }: Props) {
   return (
-    <header className="flex items-center justify-between px-4 py-4 bg-white border-b border-slate-200 md:hidden sticky top-0 z-30">
+    <header className="flex items-center justify-between px-4 py-3.5 bg-white/90 dark:bg-[#111827]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 md:hidden sticky top-0 z-30 transition-colors">
       <div className="flex items-center gap-2">
-        <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-600">
-          <Wallet className="h-3.5 w-3.5 text-white" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-600 dark:bg-emerald-500 shadow-sm">
+          <Wallet className="h-4 w-4 text-white dark:text-slate-950" />
         </div>
-        <span className="font-bold text-slate-800">{title}</span>
+        <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-slate-100">{title}</span>
       </div>
-      <MonthPicker date={date} onChange={onDateChange} />
+
+      <div className="flex items-center gap-1.5">
+        <MonthPicker date={date} onChange={onDateChange} />
+        <ThemeToggle size="sm" />
+      </div>
     </header>
   )
 }

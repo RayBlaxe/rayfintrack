@@ -4,8 +4,8 @@
   "description": "Personal Expense & Budget Tracker",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#4f46e5",
+  "background_color": "#090D16",
+  "theme_color": "#059669",
   "orientation": "portrait-primary",
   "categories": ["finance", "productivity"],
   "icons": [
@@ -28,7 +28,6 @@
       "purpose": "maskable"
     }
   ],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "Transaksi",
@@ -39,6 +38,11 @@
       "name": "Budget",
       "url": "/budgets",
       "description": "Kelola anggaran"
+    },
+    {
+      "name": "Dompet & Aset",
+      "url": "/wallets",
+      "description": "Kelola rekening dan aset"
     }
   ]
 }

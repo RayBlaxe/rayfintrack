@@ -12,10 +12,10 @@ export function CategoryBadge({ category, showEmoji = true, className = '' }: Pr
 
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium text-white ${className}`}
-      style={{ backgroundColor: color }}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200/80 dark:border-slate-700/80 ${className}`}
     >
-      {showEmoji && <span>{emoji}</span>}
+      <span className="h-2 w-2 rounded-full flex-shrink-0 shadow-xs" style={{ backgroundColor: color }} />
+      {showEmoji && <span className="text-[11px]">{emoji}</span>}
       <span className="truncate max-w-[120px]">{category}</span>
     </span>
   )

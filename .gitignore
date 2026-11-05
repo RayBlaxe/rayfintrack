@@ -9,4 +9,5 @@ public/worker-*.js
 *.pem
 .DS_Store
 backup_rayfin_20260920.sql
-
+scripts/
+tsconfig.tsbuildinfo

@@ -11,6 +11,7 @@ import { NeedsWantsSavings } from '@/components/dashboard/NeedsWantsSavings'
 import { CalendarHeatmap } from '@/components/dashboard/CalendarHeatmap'
 import { HealthScore } from '@/components/dashboard/HealthScore'
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions'
+import { MonthPicker } from '@/components/shared/MonthPicker'
 import { useAccounts } from '@/hooks/useAccounts'
 import { useBudgets } from '@/hooks/useBudgets'
 import { useGoals } from '@/hooks/useGoals'
@@ -21,7 +22,7 @@ import { useDailyBudgetSettings } from '@/hooks/useDailyBudgetSettings'
 import { NEEDS_CATEGORIES, WANTS_CATEGORIES } from '@/lib/constants'
 
 export default function DashboardPage() {
-  const [date] = useState(new Date())
+  const [date, setDate] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const { accounts } = useAccounts()
@@ -32,8 +33,10 @@ export default function DashboardPage() {
   const { settings: dailySettings } = useDailyBudgetSettings()
   const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date)
 
-  // Today's figures
-  const todayStr = new Date().toISOString().split('T')[0]
+  // Today's figures (WIB timezone)
+  const todayStr = useMemo(() => {
+    return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
+  }, [])
   const todayExpense = useMemo(() =>
     transactions
       .filter(t => t.transaction_date === todayStr && t.flow_type === 'EXPENSE')
@@ -97,6 +100,11 @@ export default function DashboardPage() {
           foodDailyLimit={dailySettings.foodDailyLimit}
           safeToSpendDaily={metrics.safeToSpendDaily ?? 0}
         />
+
+        {/* Month navigation */}
+        <div className="px-5 flex justify-end -mt-2 mb-1">
+          <MonthPicker date={date} onChange={setDate} />
+        </div>
 
         <HeroCard
           safeToSpendDaily={metrics.safeToSpendDaily ?? 0}

@@ -59,13 +59,12 @@ export default function WalletsPage() {
         {/* Header */}
         <div className="px-5 pt-8 pb-2 flex items-center justify-between">
           <div>
-            <h1 className="text-white text-2xl font-black">Dompet & Aset</h1>
-            <p className="text-white/40 text-sm mt-1">Gambaran lengkap kekayaanmu</p>
+            <h1 className="text-slate-900 dark:text-slate-50 text-2xl font-black tracking-tight">Dompet & Aset</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Gambaran lengkap kekayaan finansialmu</p>
           </div>
           <button
             onClick={() => setAssetModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#CCFF00] text-black text-xs font-bold shadow-lg hover:opacity-90 transition-all"
-            style={{ boxShadow: '0 4px 16px rgba(204,255,0,0.25)' }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 text-xs font-bold shadow-md hover:shadow-lg transition-all"
           >
             <Plus className="h-4 w-4" strokeWidth={2.5} />
             <span>Aset Baru</span>
@@ -81,10 +80,10 @@ export default function WalletsPage() {
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all flex-shrink-0 ${
+              className={`px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all flex-shrink-0 ${
                 tab === t.key
-                  ? 'bg-[#CCFF00] text-black'
-                  : 'bg-white/8 text-white/60 border border-white/10 hover:border-white/20'
+                  ? 'bg-emerald-600 text-white dark:bg-emerald-500 dark:text-slate-950 shadow-sm'
+                  : 'bg-white dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700'
               }`}
             >
               {t.label}
@@ -112,29 +111,29 @@ export default function WalletsPage() {
 
           {/* Assets */}
           {(tab === 'all' || tab === 'asset') && Object.entries(assetsByType).map(([type, items]) => (
-            <div key={type} className="bg-[#161B22] rounded-3xl border border-white/8 overflow-hidden">
-              <div className="px-5 py-4 border-b border-white/5 flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: ASSET_TYPE_COLORS[type] }} />
-                <h3 className="text-white font-bold text-sm">{ASSET_TYPE_LABELS[type] ?? type}</h3>
+            <div key={type} className="bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center gap-2">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: ASSET_TYPE_COLORS[type] }} />
+                <h3 className="text-slate-900 dark:text-slate-100 font-bold text-sm">{ASSET_TYPE_LABELS[type] ?? type}</h3>
               </div>
-              <div className="px-5">
+              <div className="px-5 divide-y divide-slate-100 dark:divide-slate-800/60">
                 {items.map((a, i) => (
                   <motion.div
                     key={a.id}
                     initial={{ opacity: 0, x: -8 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: i * 0.05 }}
-                    className="flex items-center justify-between py-3.5 border-b border-white/5 last:border-0"
+                    className="flex items-center justify-between py-3.5"
                   >
                     <div>
-                      <p className="text-white text-sm font-semibold">{a.asset_name}</p>
-                      {a.notes && <p className="text-white/40 text-xs mt-0.5">{a.notes}</p>}
+                      <p className="text-slate-900 dark:text-slate-100 text-sm font-semibold">{a.asset_name}</p>
+                      {a.notes && <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">{a.notes}</p>}
                     </div>
                     <div className="flex items-center gap-3">
-                      <p className="text-white font-bold text-sm">{formatRupiahCompact(a.value)}</p>
+                      <p className="text-slate-900 dark:text-slate-100 font-bold font-mono text-sm">{formatRupiahCompact(a.value)}</p>
                       <button
                         onClick={() => handleDeleteAsset(a.id, a.asset_name)}
-                        className="text-white/20 hover:text-[#FF85A1] transition-colors p-1"
+                        className="text-slate-400 hover:text-rose-500 dark:text-slate-500 dark:hover:text-rose-400 transition-colors p-1"
                         title="Hapus aset"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -147,13 +146,13 @@ export default function WalletsPage() {
           ))}
 
           {assets.length === 0 && (tab === 'all' || tab === 'asset') && (
-            <div className="bg-[#161B22] rounded-3xl border border-dashed border-white/15 p-8 text-center">
+            <div className="bg-white dark:bg-[#111827] rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center shadow-sm dark:shadow-none">
               <p className="text-4xl mb-3">🏦</p>
-              <p className="text-white/50 text-sm">Belum ada data aset.</p>
-              <p className="text-white/30 text-xs mt-1 mb-4">Catat investasi, properti, tabungan emas, dll.</p>
+              <p className="text-slate-700 dark:text-slate-300 text-sm font-medium">Belum ada data aset.</p>
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-1 mb-4">Catat investasi, properti, tabungan emas, dll.</p>
               <button
                 onClick={() => setAssetModalOpen(true)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#CCFF00] text-black text-xs font-bold"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 text-xs font-bold shadow transition-all"
               >
                 <Plus className="h-4 w-4" />
                 Tambah Aset Pertama

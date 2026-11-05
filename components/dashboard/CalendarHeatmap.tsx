@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+
 import { motion } from 'framer-motion'
 import { DailyExpenseMap } from '@/types'
 import { formatRupiahUltraCompact, isToday } from '@/lib/formatters'
@@ -55,20 +55,19 @@ export function CalendarHeatmap({ year, month, dailyExpenses, selectedDate, onSe
   const weeks = []
   for (let i = 0; i < days.length; i += 7) weeks.push(days.slice(i, i + 7))
 
-  const maxExpense = Math.max(...Object.values(dailyExpenses), 1)
-
-  function getIntensity(amount: number): number {
-    return Math.min(amount / maxExpense, 1)
-  }
-
   return (
-    <div className="bg-[#161B22] rounded-3xl p-5 border border-white/8">
-      <h2 className="text-white font-bold mb-4">Aktivitas Bulan Ini</h2>
+    <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-slate-900 dark:text-slate-50 font-bold text-sm tracking-tight">Kalender Aktivitas</h2>
+          <p className="text-[10px] text-slate-500 dark:text-slate-400">Pengeluaran harian bulan ini</p>
+        </div>
+      </div>
 
       {/* Day headers */}
       <div className="grid grid-cols-7 mb-2">
         {DAY_LABELS.map(d => (
-          <div key={d} className="text-center text-[10px] font-semibold text-white/30 py-1">
+          <div key={d} className="text-center text-[10px] font-bold text-slate-500 dark:text-slate-400 py-1">
             {d}
           </div>
         ))}
@@ -81,41 +80,37 @@ export function CalendarHeatmap({ year, month, dailyExpenses, selectedDate, onSe
             const expense = dailyExpenses[dateStr] ?? 0
             const today = isToday(dateStr)
             const selected = selectedDate === dateStr
-            const intensity = getIntensity(expense)
 
             return (
               <motion.button
                 key={dateStr}
-                whileTap={{ scale: 0.88 }}
+                whileTap={{ scale: 0.9 }}
+                type="button"
                 onClick={() => {
                   if (!currentMonth) return
                   onSelectDate(selected ? null : dateStr)
                 }}
                 className={cn(
                   'relative flex flex-col items-center py-1.5 px-0.5 rounded-xl transition-all min-h-[48px]',
-                  currentMonth ? 'cursor-pointer hover:bg-white/5' : 'cursor-default opacity-25',
-                  selected && 'bg-[#CCFF00]/10',
-                  today && !selected && 'ring-1 ring-[#CCFF00]/60'
+                  currentMonth
+                    ? 'cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                    : 'cursor-default opacity-20',
+                  selected && 'bg-emerald-500/10 dark:bg-emerald-950/50 border border-emerald-500',
+                  today && !selected && 'ring-2 ring-emerald-600 dark:ring-emerald-400'
                 )}
               >
                 {/* Date number */}
                 <span className={cn(
                   'text-[11px] font-bold leading-none mb-1',
-                  today ? 'text-[#CCFF00]' : 'text-white/70',
-                  selected && 'text-[#CCFF00]'
+                  today ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-800 dark:text-slate-200',
+                  selected && 'text-emerald-700 dark:text-emerald-400'
                 )}>
                   {day}
                 </span>
 
                 {/* Expense badge */}
                 {expense > 0 && currentMonth && (
-                  <span
-                    className="text-[8px] font-bold px-1 py-0.5 rounded-md leading-none"
-                    style={{
-                      backgroundColor: `rgba(255, 133, 161, ${0.15 + intensity * 0.45})`,
-                      color: '#FF85A1',
-                    }}
-                  >
+                  <span className="text-[9px] font-bold font-mono px-1 py-0.5 rounded-md leading-none bg-rose-100 dark:bg-rose-950/60 text-rose-700 dark:text-rose-300">
                     -{formatRupiahUltraCompact(expense)}
                   </span>
                 )}
@@ -126,15 +121,17 @@ export function CalendarHeatmap({ year, month, dailyExpenses, selectedDate, onSe
       ))}
 
       {selectedDate && (
-        <div className="mt-3 pt-3 border-t border-white/8 flex items-center justify-between">
-          <p className="text-white/50 text-xs">
-            {selectedDate}: {dailyExpenses[selectedDate]
+        <div className="mt-3 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
+          <p className="text-slate-600 dark:text-slate-400 text-xs font-medium">
+            <span className="font-bold text-slate-800 dark:text-slate-200">{selectedDate}:</span>{' '}
+            {dailyExpenses[selectedDate]
               ? formatRupiahUltraCompact(dailyExpenses[selectedDate]) + ' pengeluaran'
               : 'Tidak ada pengeluaran'}
           </p>
           <button
+            type="button"
             onClick={() => onSelectDate(null)}
-            className="text-[#CCFF00] text-xs font-medium"
+            className="text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:underline"
           >
             Hapus filter
           </button>

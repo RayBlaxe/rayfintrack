@@ -86,8 +86,8 @@ export default function ScannerPage() {
     <div className="flex flex-col gap-5 pb-8">
       {/* Header */}
       <div className="px-5 pt-8 pb-2">
-        <h1 className="text-white text-2xl font-black">Scan Struk</h1>
-        <p className="text-white/40 text-sm mt-1">Foto struk → AI ekstrak otomatis</p>
+        <h1 className="text-slate-900 dark:text-slate-50 text-2xl font-black tracking-tight">Scan Struk</h1>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Foto struk → AI ekstrak otomatis</p>
       </div>
 
       {/* Camera input */}
@@ -104,35 +104,35 @@ export default function ScannerPage() {
       <div className="px-5">
         {!preview ? (
           <motion.button
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => inputRef.current?.click()}
-            className="w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-white/15 flex flex-col items-center justify-center gap-4 hover:border-[#CCFF00]/40 transition-colors"
+            className="w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-[#111827] flex flex-col items-center justify-center gap-4 hover:border-emerald-500/60 transition-all shadow-sm dark:shadow-none"
           >
-            <div className="h-16 w-16 rounded-2xl bg-[#1b3a4b] flex items-center justify-center">
-              <Camera className="h-8 w-8 text-[#CCFF00]" />
+            <div className="h-16 w-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/50">
+              <Camera className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
             </div>
-            <div className="text-center">
-              <p className="text-white font-semibold">Foto Struk</p>
-              <p className="text-white/40 text-sm mt-1">Tap untuk buka kamera atau pilih foto</p>
+            <div className="text-center px-4">
+              <p className="text-slate-900 dark:text-slate-100 font-bold text-base">Ambil Foto Struk</p>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Tap untuk buka kamera atau pilih dari galeri</p>
             </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-[#CCFF00] rounded-xl">
-              <Upload className="h-4 w-4 text-black" />
-              <span className="text-black text-sm font-bold">Pilih Foto</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 rounded-xl font-bold text-xs shadow-sm transition-colors">
+              <Upload className="h-4 w-4" />
+              <span>Pilih Gambar</span>
             </div>
           </motion.button>
         ) : (
-          <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden">
+          <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800">
             <img src={preview} alt="Preview" className="w-full h-full object-cover" />
             <button
               onClick={reset}
-              className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/60 flex items-center justify-center"
+              className="absolute top-3 right-3 h-9 w-9 rounded-full bg-slate-900/80 hover:bg-slate-900 text-white flex items-center justify-center transition-colors shadow-lg"
             >
-              <RefreshCw className="h-4 w-4 text-white" />
+              <RefreshCw className="h-4 w-4" />
             </button>
             {scanning && (
-              <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="h-10 w-10 text-[#CCFF00] animate-spin" />
-                <p className="text-white font-semibold">Menganalisis struk...</p>
+              <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center gap-3">
+                <Loader2 className="h-10 w-10 text-emerald-400 animate-spin" />
+                <p className="text-white font-bold text-base">Menganalisis struk...</p>
               </div>
             )}
           </div>
@@ -141,8 +141,8 @@ export default function ScannerPage() {
 
       {/* Error */}
       {error && (
-        <div className="mx-5 bg-[#FF85A1]/10 border border-[#FF85A1]/20 rounded-2xl p-4">
-          <p className="text-[#FF85A1] text-sm">⚠️ {error}</p>
+        <div className="mx-5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-2xl p-4">
+          <p className="text-rose-700 dark:text-rose-400 text-sm font-medium">⚠️ {error}</p>
         </div>
       )}
 
@@ -152,56 +152,56 @@ export default function ScannerPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mx-5 bg-[#161B22] rounded-3xl border border-white/8 overflow-hidden"
+            className="mx-5 bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm dark:shadow-none overflow-hidden"
           >
-            <div className="px-5 py-4 border-b border-white/8 flex items-center justify-between">
-              <h2 className="text-white font-bold">Hasil Scan</h2>
+            <div className="px-5 py-4 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+              <h2 className="text-slate-900 dark:text-slate-100 font-bold">Hasil Analisis Struk</h2>
               <span
-                className="text-[10px] font-bold px-2 py-1 rounded-full"
+                className="text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider"
                 style={{ color: confidenceColor, backgroundColor: `${confidenceColor}20` }}
               >
-                {result.confidence}
+                {result.confidence} CONFIDENCE
               </span>
             </div>
 
             <div className="px-5 py-4 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-white/50 text-sm">Total</span>
-                <span className="text-[#FF85A1] text-xl font-black">{formatRupiah(result.amount)}</span>
+                <span className="text-slate-500 dark:text-slate-400 text-sm">Total Belanja</span>
+                <span className="text-rose-600 dark:text-rose-400 text-xl font-black font-mono">{formatRupiah(result.amount)}</span>
               </div>
               {result.merchant_name && (
                 <div className="flex items-center justify-between">
-                  <span className="text-white/50 text-sm">Merchant</span>
-                  <span className="text-white font-medium text-sm">{result.merchant_name}</span>
+                  <span className="text-slate-500 dark:text-slate-400 text-sm">Merchant / Toko</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-semibold text-sm">{result.merchant_name}</span>
                 </div>
               )}
               <div className="flex items-center justify-between">
-                <span className="text-white/50 text-sm">Kategori</span>
-                <span className="text-white text-sm">
+                <span className="text-slate-500 dark:text-slate-400 text-sm">Kategori</span>
+                <span className="text-slate-900 dark:text-slate-100 font-medium text-sm">
                   {CATEGORY_EMOJI[result.category] ?? '📦'} {result.category}
                 </span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/50 text-sm">Akun</span>
-                <span className="text-white text-sm">{ACCOUNT_LABELS[result.source_account] ?? result.source_account}</span>
+                <span className="text-slate-500 dark:text-slate-400 text-sm">Sumber Akun</span>
+                <span className="text-slate-900 dark:text-slate-100 font-medium text-sm">{ACCOUNT_LABELS[result.source_account] ?? result.source_account}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-white/50 text-sm">Tanggal</span>
-                <span className="text-white text-sm">{result.transaction_date}</span>
+                <span className="text-slate-500 dark:text-slate-400 text-sm">Tanggal</span>
+                <span className="text-slate-900 dark:text-slate-100 font-medium text-sm font-mono">{result.transaction_date}</span>
               </div>
             </div>
 
             <div className="px-5 pb-5">
               {saved ? (
-                <div className="flex items-center justify-center gap-2 py-3 bg-[#CCFF00]/10 rounded-2xl border border-[#CCFF00]/20">
-                  <CheckCircle2 className="h-5 w-5 text-[#CCFF00]" />
-                  <span className="text-[#CCFF00] font-bold">Tersimpan!</span>
+                <div className="flex items-center justify-center gap-2 py-3.5 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800">
+                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <span className="text-emerald-700 dark:text-emerald-300 font-bold">Transaksi Berhasil Disimpan!</span>
                 </div>
               ) : (
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="w-full py-3.5 rounded-2xl bg-[#CCFF00] text-black font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                  className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 font-bold flex items-center justify-center gap-2 shadow-md transition-all disabled:opacity-50"
                 >
                   {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                   {saving ? 'Menyimpan...' : '✅ Simpan Transaksi'}

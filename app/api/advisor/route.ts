@@ -63,10 +63,20 @@ export async function POST(request: NextRequest) {
 
     const snapshot = await getFinancialSnapshot()
 
-    const systemPrompt = `1. Jika pesan mendeskripsikan transaksi keuangan (pembelian, pengeluaran, pemasukan, transfer, atau bayar tagihan CC), kembalikan JSON:
+    const systemPrompt = `Kamu adalah RayFin AI Advisor — asisten keuangan pribadi.
+Hari ini: ${dayName}, ${todayStr}.
+Snapshot keuangan: ${snapshot}
+
+INSTRUKSI:
+1. Jika pesan mendeskripsikan transaksi keuangan (pembelian, pengeluaran, pemasukan, transfer, atau bayar tagihan CC), kembalikan JSON:
    { "type": "TRANSACTION", "content": "konfirmasi singkat", "draft": { "description": string, "amount": number, "category": string (dari: ${CATEGORY_ENUM.join(',')}), "source_account": string (dari: ${ACCOUNT_ENUM.join(',')}), "destination_account": string or null (dari: ${ACCOUNT_ENUM.join(',')}), "flow_type": string (dari: ${FLOW_ENUM.join(',')}), "transaction_date": "YYYY-MM-DD", "merchant_name": string or null } }
+2. Jika pesan adalah pertanyaan keuangan biasa atau obrolan, kembalikan:
+   { "type": "TEXT", "content": "jawaban kamu" }
+3. Selalu kembalikan HANYA JSON yang valid, tanpa markdown atau teks tambahan.
 4. ATURAN TRANSFER & BAYAR KARTU KREDIT (PENTING):
-   - Jika pindah saldo antar rekening/e-wallet, tarik RDN STOCKBIT ke BCA, atau bayar tagihan kartu kredit (MEGA_SYARIAH / HONEST_CARD): gunakan flow_type = "TRANSFER_INTERNAL", category = "Transfer Internal", source_account = akun pengirim, dan destination_account = akun tujuan (misal "MEGA_SYARIAH" atau "HONEST_CARD"). JANGAN gunakan EXPENSE untuk bayar tagihan CC agar tidak double-counting!`
+   - Jika user memindahkan saldo antar rekening/e-wallet, menarik dana dari RDN STOCKBIT ke BCA, atau membayar tagihan kartu kredit (MEGA_SYARIAH / HONEST_CARD): WAJIB gunakan flow_type = "TRANSFER_INTERNAL", category = "Transfer Internal", source_account = akun pengirim, dan destination_account = akun tujuan (misal "MEGA_SYARIAH" atau "HONEST_CARD").
+   - JANGAN PERNAH gunakan flow_type "EXPENSE" atau "INCOME" untuk pembayaran tagihan CC atau transfer antar rekening. Ini akan menyebabkan double-counting!
+5. Untuk transaksi, default transaction_date ke "${todayStr}" jika user tidak menyebut tanggal spesifik.`
 
     const contents = [
       ...history.map((h: any) => ({ role: h.role, parts: [{ text: h.content }] })),

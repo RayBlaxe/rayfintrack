@@ -18,18 +18,18 @@ export function BudgetProgressItem({ budget }: Props) {
   const clampedPct = Math.min(pct, 100)
 
   return (
-    <div className="space-y-2 p-3.5 bg-white/5 rounded-2xl border border-white/5">
+    <div className="space-y-2 p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/70 dark:border-slate-800 transition-colors">
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-lg leading-none">{emoji}</span>
-          <span className="font-semibold text-white truncate text-xs">{category}</span>
+          <span className="text-base leading-none">{emoji}</span>
+          <span className="font-bold text-slate-900 dark:text-slate-100 truncate text-xs">{category}</span>
           {isOver && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-[#FF85A1]/20 text-[#FF85A1] font-bold">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 font-bold">
               Over!
             </span>
           )}
           {isWarning && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 font-bold">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 font-bold">
               80%+
             </span>
           )}
@@ -37,18 +37,18 @@ export function BudgetProgressItem({ budget }: Props) {
         <div className="text-right flex-shrink-0 ml-2">
           <span
             className={cn(
-              'font-bold text-xs',
-              isOver ? 'text-[#FF85A1]' : 'text-white'
+              'font-bold font-mono text-xs',
+              isOver ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'
             )}
           >
             {formatRupiahCompact(spent)}
           </span>
-          <span className="text-white/40 text-xs"> / {formatRupiahCompact(limit)}</span>
+          <span className="text-slate-500 dark:text-slate-400 font-mono text-xs"> / {formatRupiahCompact(limit)}</span>
         </div>
       </div>
 
       {/* Progress Bar */}
-      <div className="h-1.5 w-full bg-white/8 rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: `${clampedPct}%` }}
@@ -56,20 +56,20 @@ export function BudgetProgressItem({ budget }: Props) {
           className={cn(
             'h-full rounded-full',
             isOver
-              ? 'bg-[#FF85A1]'
+              ? 'bg-red-500'
               : isWarning
-              ? 'bg-amber-400'
-              : 'bg-[#CCFF00]'
+              ? 'bg-amber-500'
+              : 'bg-emerald-600 dark:bg-emerald-500'
           )}
         />
       </div>
 
-      <div className="flex justify-between items-center text-[10px]">
-        <span className="text-white/30">{pct.toFixed(0)}% terpakai</span>
+      <div className="flex justify-between items-center text-[10px] font-medium">
+        <span className="text-slate-500 dark:text-slate-400">{pct.toFixed(0)}% terpakai</span>
         <span
           className={cn(
-            'font-medium',
-            remaining >= 0 ? 'text-white/50' : 'text-[#FF85A1]'
+            'font-semibold',
+            remaining >= 0 ? 'text-slate-600 dark:text-slate-300' : 'text-red-600 dark:text-red-400'
           )}
         >
           {remaining >= 0

@@ -22,7 +22,7 @@ export function WalletGrid({ accounts, loading }: Props) {
 
   if (accounts.length === 0) {
     return (
-      <div className="text-center py-8 text-slate-400 text-sm">
+      <div className="text-center py-8 text-slate-500 dark:text-slate-400 text-sm font-medium">
         Belum ada data akun. Set saldo via Telegram /saldo set BCA 5000000
       </div>
     )

@@ -88,7 +88,7 @@ export function getFirstDayOfWeek(year: number, month: number): number {
 }
 
 export function isToday(dateStr: string): boolean {
-  return dateStr === new Date().toISOString().split('T')[0]
+  return dateStr === new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
 }
 
 export function deadlineDaysLeft(deadline: string | null): number | null {

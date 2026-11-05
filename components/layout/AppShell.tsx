@@ -10,24 +10,26 @@ interface Props {
 
 function AppShellContent({ children }: Props) {
   const pathname = usePathname()
-  const isLoginPage = pathname === '/login'
+  const isAuthPage = pathname === '/login' || pathname === '/register'
 
   return (
-    <div className="min-h-screen bg-[#0D1117] dark:bg-[#0D1117] light:bg-[#F8F9FA] flex justify-center">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-50 flex justify-center transition-colors">
       {/* Phone-width container */}
-      <div className="relative w-full max-w-[480px] min-h-screen bg-[#0D1117]">
-        {/* Scrollable main content */}
-        <main className={isLoginPage ? '' : 'pb-32'}>
+      <div className="relative w-full max-w-[480px] min-h-screen bg-slate-50 dark:bg-[#090D16] border-x border-slate-200/70 dark:border-white/5 transition-colors">
+        {/* Scrollable main content with bottom padding for FloatingDock */}
+        <main className={isAuthPage ? '' : 'pb-32'}>
           {children}
         </main>
-        {/* Floating dock only on non-login pages */}
-        {!isLoginPage && <FloatingDock />}
+        {/* Floating dock only on non-auth pages */}
+        {!isAuthPage && <FloatingDock />}
       </div>
 
       {/* Desktop ambient bg */}
       <div
-        className="fixed inset-0 -z-10 hidden md:block"
-        style={{ background: 'radial-gradient(ellipse at 50% 0%, #1b3a4b40 0%, #0D1117 70%)' }}
+        className="fixed inset-0 -z-10 hidden md:block pointer-events-none"
+        style={{
+          background: 'radial-gradient(ellipse at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 65%)',
+        }}
       />
     </div>
   )

@@ -14,11 +14,11 @@ interface Props {
 export function SafeToSpendWidget({ totalBudget, totalExpense, daysRemaining, loading }: Props) {
   if (loading) {
     return (
-      <Card>
+      <Card className="border-slate-200 dark:border-slate-800">
         <CardContent className="p-5">
-          <div className="h-4 w-32 bg-slate-200 rounded mb-2 animate-pulse" />
-          <div className="h-8 w-44 bg-slate-200 rounded mb-1 animate-pulse" />
-          <div className="h-3 w-52 bg-slate-100 rounded animate-pulse" />
+          <div className="h-4 w-32 bg-slate-200 dark:bg-slate-800 rounded mb-2 animate-pulse" />
+          <div className="h-8 w-44 bg-slate-200 dark:bg-slate-800 rounded mb-1 animate-pulse" />
+          <div className="h-3 w-52 bg-slate-100 dark:bg-slate-800/60 rounded animate-pulse" />
         </CardContent>
       </Card>
     )
@@ -26,12 +26,12 @@ export function SafeToSpendWidget({ totalBudget, totalExpense, daysRemaining, lo
 
   if (totalBudget === 0) {
     return (
-      <Card className="border-dashed">
+      <Card className="border-dashed border-slate-300 dark:border-slate-700">
         <CardContent className="p-5 text-center">
-          <Wallet className="h-6 w-6 text-slate-300 mx-auto mb-2" />
-          <p className="text-sm text-slate-500">
+          <Wallet className="h-6 w-6 text-slate-400 dark:text-slate-500 mx-auto mb-2" />
+          <p className="text-sm text-slate-600 dark:text-slate-400">
             Set anggaran via Telegram{' '}
-            <code className="bg-slate-100 px-1 rounded text-xs">/budget set</code>
+            <code className="bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 px-1.5 py-0.5 rounded text-xs font-mono">/budget set</code>
           </p>
         </CardContent>
       </Card>
@@ -48,19 +48,19 @@ export function SafeToSpendWidget({ totalBudget, totalExpense, daysRemaining, lo
   return (
     <Card
       className={cn(
-        'border-l-4',
-        status === 'safe' && 'border-l-emerald-500',
-        status === 'warning' && 'border-l-amber-500',
-        status === 'danger' && 'border-l-rose-500'
+        'border-l-4 border-slate-200 dark:border-slate-800 shadow-sm',
+        status === 'safe' && 'border-l-emerald-500 dark:border-l-emerald-500',
+        status === 'warning' && 'border-l-amber-500 dark:border-l-amber-500',
+        status === 'danger' && 'border-l-rose-500 dark:border-l-rose-500'
       )}
     >
       <CardContent className="p-5">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-1.5">
-            <Wallet className="h-4 w-4 text-slate-400" />
-            <span className="text-sm text-slate-500 font-medium">Safe-to-Spend</span>
+            <Wallet className="h-4 w-4 text-slate-400 dark:text-slate-500" />
+            <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Safe-to-Spend</span>
           </div>
-          <Badge variant="outline" className="text-xs gap-1">
+          <Badge variant="outline" className="text-xs gap-1 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
             <Clock className="h-3 w-3" />
             {daysRemaining} hari lagi
           </Badge>
@@ -69,25 +69,25 @@ export function SafeToSpendWidget({ totalBudget, totalExpense, daysRemaining, lo
         <div className="flex items-baseline gap-1.5 mb-1">
           <p
             className={cn(
-              'text-3xl font-bold tracking-tight',
-              status === 'safe' && 'text-emerald-600',
-              status === 'warning' && 'text-amber-600',
-              status === 'danger' && 'text-rose-600'
+              'text-3xl font-bold font-mono tracking-tight',
+              status === 'safe' && 'text-emerald-600 dark:text-emerald-400',
+              status === 'warning' && 'text-amber-600 dark:text-amber-400',
+              status === 'danger' && 'text-rose-600 dark:text-rose-400'
             )}
           >
             {dailyBudget > 0 ? formatRupiah(dailyBudget) : 'Overbudget!'}
           </p>
           {dailyBudget > 0 && (
-            <span className="text-sm text-slate-400">/hari</span>
+            <span className="text-sm text-slate-500 dark:text-slate-400">/hari</span>
           )}
         </div>
 
-        <div className="flex items-center gap-1.5 text-sm text-slate-500">
+        <div className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400">
           <TrendingDown className="h-3.5 w-3.5" />
           <span>
             Terpakai {formatRupiahCompact(totalExpense)} dari{' '}
             {formatRupiahCompact(totalBudget)}{' '}
-            <span className="font-medium">({pct.toFixed(0)}%)</span>
+            <span className="font-semibold text-slate-700 dark:text-slate-300">({pct.toFixed(0)}%)</span>
           </span>
         </div>
       </CardContent>

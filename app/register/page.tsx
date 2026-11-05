@@ -1,11 +1,10 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, User, Loader2, Database } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
-import { ACCOUNT_LABELS } from '@/lib/constants'
 
 function RegisterForm() {
   const searchParams = useSearchParams()
@@ -37,7 +36,7 @@ function RegisterForm() {
     const password = `RayFin!${formattedUsername}2026`
 
     try {
-      // 1. Sign up user via Server API (Bypasses Email Confirmation & Rate Limits)
+      // 1. Sign up user via Server API
       setStep(2)
       const res = await fetch('/api/auth/register', {
         method: 'POST',
@@ -71,7 +70,7 @@ function RegisterForm() {
         .from('accounts')
         .insert(accountsToInsert)
       
-      if (seedError && seedError.code !== '23505') { // Ignore unique constraint violation if already exists
+      if (seedError && seedError.code !== '23505') {
         console.error('Seed Error:', seedError)
       }
 
@@ -87,9 +86,9 @@ function RegisterForm() {
   return (
     <form onSubmit={handleRegister} className="space-y-4">
       <div className="space-y-1.5">
-        <label className="text-xs font-semibold text-white/60">Username Baru</label>
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Username Baru</label>
         <div className="relative flex items-center">
-          <div className="absolute left-3.5 text-white/30 pointer-events-none">
+          <div className="absolute left-3.5 text-slate-400 pointer-events-none">
             <User className="h-4 w-4" />
           </div>
           <input
@@ -99,32 +98,29 @@ function RegisterForm() {
               setUsername(e.target.value)
               if (error) setError('')
             }}
-            placeholder="Contoh: Budi"
-            disabled={isLoading}
-            className="w-full h-12 pl-10 pr-4 bg-white/5 border border-white/10 rounded-2xl text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00] transition-all disabled:opacity-50"
+            placeholder="Masukkan username kamu"
+            className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-600/20 transition-all font-medium"
             autoFocus
           />
         </div>
-        {error && <p className="text-[11px] text-[#FF85A1]">{error}</p>}
+        {error && <p className="text-[11px] font-semibold text-red-600 dark:text-red-400">{error}</p>}
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full h-12 rounded-2xl bg-[#CCFF00] hover:bg-[#b8e600] active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none text-black font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-[#CCFF00]/20 mt-4"
+        className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 active:scale-[0.98] disabled:opacity-50 text-white dark:text-slate-950 font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md"
       >
         {isLoading ? (
-          <>
+          <div className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>
-              {step === 1 && 'Memproses...'}
-              {step === 2 && 'Mendaftarkan...'}
-              {step === 3 && 'Menyiapkan Database...'}
+            <span className="text-xs">
+              {step === 2 ? 'Mendaftarkan User...' : 'Menyiapkan Buku Kas...'}
             </span>
-          </>
+          </div>
         ) : (
           <>
-            <span>Buat Akun</span>
+            <span>Buat Akun & Masuk</span>
             <ArrowRight className="h-4 w-4" />
           </>
         )}
@@ -135,41 +131,37 @@ function RegisterForm() {
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen flex flex-col justify-center px-6 py-12 relative overflow-hidden">
-      <div className="absolute -top-24 -left-24 w-72 h-72 bg-[#006466]/20 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-[#CCFF00]/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex flex-col justify-center px-6 py-12 relative overflow-hidden bg-slate-50 dark:bg-[#06090E] transition-colors">
+      <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-sm mx-auto space-y-8"
+        className="w-full max-w-sm mx-auto space-y-8 relative z-10"
       >
         <div className="text-center space-y-3">
-          <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-gradient-to-br from-[#1b3a4b] to-[#0b525b] border border-white/10 shadow-xl shadow-[#006466]/20">
-            <span className="text-3xl font-black text-[#CCFF00]">R</span>
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-3xl bg-emerald-500/10 dark:bg-emerald-950/40 border border-emerald-500/25 shadow-md">
+            <Database className="h-8 w-8 text-emerald-700 dark:text-emerald-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-black tracking-tight text-white flex items-center justify-center gap-2">
-              Akun Baru
+            <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-50 flex items-center justify-center gap-2">
+              Registrasi <span className="text-emerald-600 dark:text-emerald-400">RayFin</span>
             </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Buat akun untuk mengelola keuangan pribadi</p>
           </div>
         </div>
 
-        <div className="bg-[#161B22] border border-white/10 rounded-3xl p-6 shadow-2xl space-y-6">
+        <div className="bg-white dark:bg-[#0B0F17] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 transition-colors">
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-white">Halo!</h2>
-            <p className="text-xs text-white/40">Username ini belum terdaftar. Silakan lanjutkan untuk membuat ruang database terpisah (isolated environment) untukmu.</p>
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-50">Inisialisasi Akun</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Username akan dibuatkan buku kas mandiri dengan data aman terisolasi.</p>
           </div>
 
-          <Suspense fallback={<div className="h-24 flex items-center justify-center"><Loader2 className="animate-spin text-[#CCFF00]" /></div>}>
+          <Suspense fallback={<div className="h-28 flex items-center justify-center"><Loader2 className="h-6 w-6 text-emerald-600 animate-spin" /></div>}>
             <RegisterForm />
           </Suspense>
-
-          <div className="pt-2 border-t border-white/5 flex items-center justify-center gap-1.5 text-[11px] text-white/40">
-            <Database className="h-3.5 w-3.5 text-[#CCFF00]" />
-            <span>Database akan otomatis di-seed dengan akun default</span>
-          </div>
         </div>
       </motion.div>
     </div>

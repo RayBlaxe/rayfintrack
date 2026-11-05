@@ -57,6 +57,7 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   'Makanan & Minuman': '🍜',
   'Transportasi': '🚗',
   'Belanja': '🛍️',
+  'Belanja Online': '🛒',
   'Hiburan': '🎮',
   'Kesehatan': '💊',
   'Pendidikan': '📚',
@@ -65,7 +66,9 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   'Tabungan': '🏦',
   'Pemasukan': '💰',
   'Transfer': '↔️',
+  'Transfer Internal': '🔄',
   'Gaji': '💼',
+  'Freelance': '💻',
   'Bisnis': '🏢',
   'Asuransi': '🛡️',
   'Olahraga': '🏋️',
@@ -76,6 +79,9 @@ export const CATEGORY_EMOJI: Record<string, string> = {
   'Hadiah & Donasi': '🎁',
   'Perjalanan': '✈️',
   'Cicilan': '💳',
+  'Operasional': '⚙️',
+  'Komitmen Keluarga': '👨‍👩‍👧',
+  'Lifestyle & Dating': '💃',
   'Lainnya': '📦',
 }
 
@@ -84,6 +90,7 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Makanan & Minuman': '#FF6B6B',
   'Transportasi': '#4ECDC4',
   'Belanja': '#45B7D1',
+  'Belanja Online': '#38BDF8',
   'Hiburan': '#96CEB4',
   'Kesehatan': '#FFEAA7',
   'Pendidikan': '#DDA0DD',
@@ -92,7 +99,9 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Tabungan': '#98FB98',
   'Pemasukan': '#87CEEB',
   'Transfer': '#D3D3D3',
+  'Transfer Internal': '#C0C0C0',
   'Gaji': '#7BC8A4',
+  'Freelance': '#A78BFA',
   'Bisnis': '#F4A460',
   'Asuransi': '#B0C4DE',
   'Olahraga': '#FF8C00',
@@ -103,6 +112,9 @@ export const CATEGORY_COLORS: Record<string, string> = {
   'Hadiah & Donasi': '#FF69B4',
   'Perjalanan': '#00CED1',
   'Cicilan': '#FF4500',
+  'Operasional': '#6366F1',
+  'Komitmen Keluarga': '#F472B6',
+  'Lifestyle & Dating': '#FB923C',
   'Lainnya': '#94A3B8',
 }
 
@@ -116,10 +128,13 @@ export const NEEDS_CATEGORIES: string[] = [
   'Rumah Tangga',
   'Pendidikan',
   'Cicilan',
+  'Operasional',
+  'Komitmen Keluarga',
 ]
 
 export const WANTS_CATEGORIES: string[] = [
   'Belanja',
+  'Belanja Online',
   'Hiburan',
   'Olahraga',
   'Perawatan Diri',
@@ -127,6 +142,7 @@ export const WANTS_CATEGORIES: string[] = [
   'Pakaian',
   'Perjalanan',
   'Hadiah & Donasi',
+  'Lifestyle & Dating',
   'Lainnya',
 ]
 

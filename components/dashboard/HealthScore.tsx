@@ -1,7 +1,6 @@
 'use client'
+
 import { motion } from 'framer-motion'
-import { formatRupiahCompact } from '@/lib/formatters'
-import { cn } from '@/lib/utils'
 
 interface Props {
   netWorth: number
@@ -19,10 +18,10 @@ function calcScore(savingsRate: number, budgetDiscipline: number, runway: number
 }
 
 function getStatus(score: number): { label: string; color: string; bg: string } {
-  if (score >= 80) return { label: 'SANGAT BAGUS',    color: '#CCFF00', bg: 'rgba(204,255,0,0.1)' }
-  if (score >= 60) return { label: 'CUKUP BAIK',      color: '#86efac', bg: 'rgba(134,239,172,0.1)' }
-  if (score >= 40) return { label: 'WASPADA',         color: '#FFB547', bg: 'rgba(255,181,71,0.1)' }
-  return                    { label: 'PERLU PERBAIKAN', color: '#FF85A1', bg: 'rgba(255,133,161,0.1)' }
+  if (score >= 80) return { label: 'SANGAT BAGUS',    color: '#10B981', bg: 'rgba(16,185,129,0.12)' }
+  if (score >= 60) return { label: 'CUKUP BAIK',      color: '#0D9488', bg: 'rgba(13,148,136,0.12)' }
+  if (score >= 40) return { label: 'WASPADA',         color: '#D97706', bg: 'rgba(217,119,6,0.12)' }
+  return                    { label: 'PERLU PERBAIKAN', color: '#DC2626', bg: 'rgba(220,38,38,0.12)' }
 }
 
 interface MetricRowProps { label: string; value: string; sub: string; color: string }
@@ -30,29 +29,42 @@ function MetricRow({ label, value, sub, color }: MetricRowProps) {
   return (
     <div className="flex items-center justify-between">
       <div>
-        <p className="text-white/70 text-sm">{label}</p>
-        <p className="text-white/40 text-xs">{sub}</p>
+        <p className="text-slate-800 dark:text-slate-200 text-sm font-semibold">{label}</p>
+        <p className="text-slate-500 dark:text-slate-400 text-xs font-medium">{sub}</p>
       </div>
-      <span className="font-bold text-sm" style={{ color }}>{value}</span>
+      <span className="font-bold font-mono text-sm" style={{ color }}>{value}</span>
     </div>
   )
 }
 
-export function HealthScore({ netWorth, savingsRate, budgetDiscipline, liquidAssets, avgMonthlyExpense }: Props) {
+export function HealthScore({ savingsRate, budgetDiscipline, liquidAssets, avgMonthlyExpense }: Props) {
   const runway = avgMonthlyExpense > 0 ? liquidAssets / avgMonthlyExpense : 0
   const score = calcScore(savingsRate, budgetDiscipline, runway)
   const { label, color, bg } = getStatus(score)
 
   return (
-    <div className="bg-[#161B22] rounded-3xl p-5 border border-white/8">
-      <h2 className="text-white font-bold mb-5">Financial Health Score</h2>
+    <div className="bg-white dark:bg-[#111827] rounded-3xl p-5 border border-slate-200 dark:border-slate-800 shadow-sm transition-colors">
+      <div className="mb-4">
+        <h2 className="text-slate-900 dark:text-slate-50 font-bold text-sm tracking-tight">Financial Health Score</h2>
+        <p className="text-[10px] text-slate-500 dark:text-slate-400">Skor kesehatan finansial pribadi</p>
+      </div>
 
       {/* Score gauge */}
       <div className="flex items-center gap-5 mb-5">
         <div className="relative h-24 w-24 flex-shrink-0">
           <svg viewBox="0 0 100 100" className="rotate-[-135deg] h-24 w-24">
             {/* Track */}
-            <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="8" strokeLinecap="round" strokeDasharray="178 240" />
+            <circle
+              cx="50"
+              cy="50"
+              r="38"
+              fill="none"
+              stroke="currentColor"
+              className="text-slate-200 dark:text-slate-800"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray="178 240"
+            />
             {/* Progress */}
             <motion.circle
               cx="50" cy="50" r="38"
@@ -68,55 +80,55 @@ export function HealthScore({ netWorth, savingsRate, budgetDiscipline, liquidAss
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
             <motion.span
-              className="text-2xl font-black text-white"
+              className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
               {score}
             </motion.span>
-            <span className="text-white/40 text-[9px]">/100</span>
+            <span className="text-slate-400 dark:text-slate-500 text-[10px] font-semibold">/100</span>
           </div>
         </div>
 
         <div>
           <div
-            className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2"
+            className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-2 shadow-xs"
             style={{ color, backgroundColor: bg }}
           >
             {label}
           </div>
-          <p className="text-white/50 text-xs leading-relaxed">
+          <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed font-medium">
             {score >= 80
-              ? 'Keuanganmu sangat sehat! Pertahankan.'
+              ? 'Keuanganmu sangat sehat! Pertahankan disiplin ini.'
               : score >= 60
-              ? 'Lumayan baik, masih bisa ditingkatkan.'
+              ? 'Lumayan baik, tabungan dan investasi terus bertumbuh.'
               : score >= 40
-              ? 'Ada beberapa area yang perlu perhatian.'
-              : 'Segera perbaiki kebiasaan keuangan.'}
+              ? 'Waspadai pengeluaran tidak terduga dan cicilan.'
+              : 'Segera perbaiki alokasi anggaran dan lunasi kewajiban.'}
           </p>
         </div>
       </div>
 
       {/* Sub metrics */}
-      <div className="space-y-3 pt-4 border-t border-white/8">
+      <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
         <MetricRow
           label="Rasio Tabungan"
-          sub="Savings Rate"
+          sub="Persentase pendapatan disisihkan"
           value={`${savingsRate.toFixed(0)}%`}
-          color={savingsRate >= 20 ? '#CCFF00' : savingsRate >= 10 ? '#FFB547' : '#FF85A1'}
+          color={savingsRate >= 20 ? '#10B981' : savingsRate >= 10 ? '#D97706' : '#DC2626'}
         />
         <MetricRow
           label="Disiplin Anggaran"
-          sub="Budget Discipline"
+          sub="Kepatuhan batas limit bulanan"
           value={`${Math.round(budgetDiscipline)}%`}
-          color={budgetDiscipline >= 80 ? '#CCFF00' : budgetDiscipline >= 60 ? '#FFB547' : '#FF85A1'}
+          color={budgetDiscipline >= 80 ? '#10B981' : budgetDiscipline >= 60 ? '#D97706' : '#DC2626'}
         />
         <MetricRow
-          label="Runway Darurat"
-          sub="Likuid / Avg Expense"
+          label="Runway Kas Darurat"
+          sub="Ketahanan dana darurat liquid"
           value={`${runway.toFixed(1)} bln`}
-          color={runway >= 6 ? '#CCFF00' : runway >= 3 ? '#FFB547' : '#FF85A1'}
+          color={runway >= 6 ? '#10B981' : runway >= 3 ? '#D97706' : '#DC2626'}
         />
       </div>
     </div>

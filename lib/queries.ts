@@ -116,22 +116,9 @@ export async function insertClientTransaction(
     .from('transactions').insert(payload).select().single()
   if (error) throw error
 
-  // Mutate account balance atomically via RPC
-  try {
-    const amount = Number(draft.amount)
-    if (draft.flow_type === 'EXPENSE') {
-      await sb.rpc('mutate_balance', { p_account_name: draft.source_account, p_delta: -amount })
-    } else if (draft.flow_type === 'INCOME') {
-      await sb.rpc('mutate_balance', { p_account_name: draft.source_account, p_delta: amount })
-    } else if (draft.flow_type === 'TRANSFER_INTERNAL') {
-      await sb.rpc('mutate_balance', { p_account_name: draft.source_account, p_delta: -amount })
-      if (draft.destination_account) {
-        await sb.rpc('mutate_balance', { p_account_name: draft.destination_account, p_delta: amount })
-      }
-    }
-  } catch (e) {
-    console.warn('Balance mutation failed:', e)
-  }
+  // NOTE: Balance mutation is handled by the PostgreSQL trigger
+  // `trg_sync_account_balance`. Manual RPC calls removed to prevent
+  // double-counting when the trigger is active.
 
   return data
 }
