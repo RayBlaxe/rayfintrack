@@ -22,10 +22,10 @@ export default function LoginPage() {
       setError('Masukkan username terlebih dahulu')
       return
     }
-    
+
     setIsLoading(true)
     setError('')
-    
+
     const formattedUsername = name.trim().toLowerCase()
     const email = `${formattedUsername}@rayfin.local`
     const password = `RayFin!${formattedUsername}2026`
@@ -101,7 +101,7 @@ export default function LoginPage() {
                     setUsername(e.target.value)
                     if (error) setError('')
                   }}
-                  placeholder="Contoh: ray"
+                  placeholder="Contoh: Prabowo"
                   className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-600/20 transition-all font-medium"
                   autoFocus
                 />
