@@ -1,14 +1,14 @@
 {
   "id": "/",
-  "name": "RayFin – Personal Finance",
+  "name": "RayFin – Personal Finance & AI Advisor",
   "short_name": "RayFin",
-  "description": "Personal Expense & Budget Tracker",
+  "description": "Personal Expense & Budget Tracker dengan AI Advisor",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#090D16",
   "theme_color": "#059669",
-  "orientation": "portrait-primary",
+  "orientation": "portrait",
   "prefer_related_applications": false,
   "categories": ["finance", "productivity"],
   "icons": [
@@ -38,9 +38,9 @@
       "description": "Lihat semua transaksi"
     },
     {
-      "name": "Budget",
-      "url": "/budgets",
-      "description": "Kelola anggaran"
+      "name": "AI Advisor",
+      "url": "/advisor",
+      "description": "Konsultasi finansial & catat transaksi"
     },
     {
       "name": "Dompet & Aset",
@@ -48,9 +48,9 @@
       "description": "Kelola rekening dan aset"
     },
     {
-      "name": "Insights",
-      "url": "/insights",
-      "description": "Financial Insights & Pos Pengeluaran"
+      "name": "Budget",
+      "url": "/budgets",
+      "description": "Kelola anggaran"
     }
   ]
 }

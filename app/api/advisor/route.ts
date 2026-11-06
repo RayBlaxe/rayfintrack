@@ -60,28 +60,61 @@ export async function POST(request: NextRequest) {
     const now = new Date()
     const todayStr = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' }) // format YYYY-MM-DD
     const dayName = now.toLocaleDateString('id-ID', { timeZone: 'Asia/Jakarta', weekday: 'long' })
+    const yesterdayDate = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+    const yesterdayStr = yesterdayDate.toLocaleDateString('sv-SE', { timeZone: 'Asia/Jakarta' })
 
     const snapshot = await getFinancialSnapshot()
 
-    const systemPrompt = `Kamu adalah RayFin AI Advisor — asisten keuangan pribadi.
-Hari ini: ${dayName}, ${todayStr}.
-Snapshot keuangan: ${snapshot}
+    const systemPrompt = `Kamu adalah RayFin AI Advisor — asisten keuangan pribadi cerdas dan akuntan pribadi.
+Hari ini: ${dayName}, ${todayStr} (kemarin: ${yesterdayStr}).
+Snapshot keuangan pengguna saat ini: ${snapshot}
 
-INSTRUKSI:
-1. Jika pesan mendeskripsikan transaksi keuangan (pembelian, pengeluaran, pemasukan, transfer, atau bayar tagihan CC), kembalikan JSON:
-   { "type": "TRANSACTION", "content": "konfirmasi singkat", "draft": { "description": string, "amount": number, "category": string (dari: ${CATEGORY_ENUM.join(',')}), "source_account": string (dari: ${ACCOUNT_ENUM.join(',')}), "destination_account": string or null (dari: ${ACCOUNT_ENUM.join(',')}), "flow_type": string (dari: ${FLOW_ENUM.join(',')}), "transaction_date": "YYYY-MM-DD", "merchant_name": string or null } }
-2. Jika pesan adalah pertanyaan keuangan biasa atau obrolan, kembalikan:
-   { "type": "TEXT", "content": "jawaban kamu" }
-3. Selalu kembalikan HANYA JSON yang valid, tanpa markdown atau teks tambahan.
-4. ATURAN TRANSFER & BAYAR KARTU KREDIT (PENTING):
-   - Jika user memindahkan saldo antar rekening/e-wallet, menarik dana dari RDN STOCKBIT ke BCA, atau membayar tagihan kartu kredit (MEGA_SYARIAH / HONEST_CARD): WAJIB gunakan flow_type = "TRANSFER_INTERNAL", category = "Transfer Internal", source_account = akun pengirim, dan destination_account = akun tujuan (misal "MEGA_SYARIAH" atau "HONEST_CARD").
-   - JANGAN PERNAH gunakan flow_type "EXPENSE" atau "INCOME" untuk pembayaran tagihan CC atau transfer antar rekening. Ini akan menyebabkan double-counting!
-5. Untuk transaksi, default transaction_date ke "${todayStr}" jika user tidak menyebut tanggal spesifik.`
+ATURAN UTAMA & EKSTRAKSI TRANSAKSI (SANGAT KRITIKAL):
+1. Riwayat percakapan (history) HANYA digunakan sebagai referensi konteks untuk tanya-jawab keuangan (Q&A) dan kelanjutan percakapan.
+2. JANGAN PERNAH mengekstrak atau membuat ulang draft transaksi dari pesan di dalam riwayat percakapan (history), terutama pesan yang sudah dijawab atau berlabel [SISTEM]. Seluruh transaksi terdahulu sudah selesai dibukukan.
+3. Ekstraksi draft transaksi BARU HANYA boleh diambil secara EKSKLUSIF dari PESAN TERAKHIR yang diawali dengan [LATEST_USER_INPUT_TO_PROCESS]!
+4. Jika PESAN TERAKHIR pengguna berisi deskripsi transaksi baru (misal: "kemarin malem aku beli bensin untuk supra 30k pake uang cash"):
+   - Buat draft HANYA untuk transaksi baru tersebut (misal: nominal 30000, description "Bensin Supra", category "Operasional", source_account "CASH", flow_type "EXPENSE", transaction_date "${yesterdayStr}").
+   - JANGAN PERNAH menyertakan, menggabungkan, atau memunculkan ulang transaksi dari pesan-pesan sebelumnya (seperti freelance ISEF Family Run Rp 585rb, dsb).
+5. FORMAT RESPONSE:
+   - Jika pesan [LATEST_USER_INPUT_TO_PROCESS] mendeskripsikan transaksi keuangan baru (pembelian, pengeluaran, pemasukan, transfer, atau bayar tagihan CC), kembalikan JSON:
+     { "type": "TRANSACTION", "content": "konfirmasi singkat ramah", "draft": { "description": string, "amount": number, "category": string (pilih salah satu: ${CATEGORY_ENUM.join(', ')}), "source_account": string (pilih salah satu: ${ACCOUNT_ENUM.join(', ')}), "destination_account": string or null (pilih salah satu: ${ACCOUNT_ENUM.join(', ')}), "flow_type": string (pilih salah satu: ${FLOW_ENUM.join(', ')}), "transaction_date": "YYYY-MM-DD", "merchant_name": string or null } }
+   - Jika pesan adalah pertanyaan keuangan biasa atau obrolan, kembalikan JSON:
+     { "type": "TEXT", "content": "jawaban analisis keuangan kamu yang solutif dan ramah" }
+6. Selalu kembalikan HANYA JSON yang valid, tanpa pembungkus markdown codeblock (\`\`\`json) atau teks tambahan di luar JSON.
+7. ATURAN TRANSFER & BAYAR KARTU KREDIT (ANTI DOUBLE-COUNTING):
+   - Jika user memindahkan saldo antar rekening/e-wallet, menarik dana dari RDN STOCKBIT ke BCA, atau membayar tagihan kartu kredit (MEGA_SYARIAH / HONEST_CARD): WAJIB gunakan flow_type = "TRANSFER_INTERNAL", category = "Transfer Internal", source_account = akun pengirim, dan destination_account = akun tujuan.
+   - JANGAN PERNAH gunakan flow_type "EXPENSE" atau "INCOME" untuk pembayaran tagihan CC atau transfer antar rekening.
+8. ATURAN TANGGAL:
+   - Jika user menyebut "kemarin" atau "tadi malam", gunakan "${yesterdayStr}".
+   - Jika user tidak menyebut tanggal spesifik, default transaction_date ke hari ini "${todayStr}".`
 
-    const contents = [
-      ...history.map((h: any) => ({ role: h.role, parts: [{ text: h.content }] })),
-      { role: 'user', parts: [{ text: message }] },
-    ]
+    // Build normalized alternating turns for Gemini
+    const historyList = (history || []).map((h: any) => ({
+      role: h.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: String(h.content || '') }]
+    }))
+
+    const contents: any[] = []
+    for (const item of historyList) {
+      if (!item.parts[0].text.trim()) continue
+      if (contents.length > 0 && contents[contents.length - 1].role === item.role) {
+        // Merge consecutive messages with same role
+        contents[contents.length - 1].parts[0].text += `\n${item.parts[0].text}`
+      } else {
+        contents.push(item)
+      }
+    }
+
+    const currentPromptText = `[LATEST_USER_INPUT_TO_PROCESS]: ${message}`
+    if (contents.length > 0 && contents[contents.length - 1].role === 'user') {
+      contents[contents.length - 1].parts[0].text += `\n${currentPromptText}`
+    } else {
+      contents.push({
+        role: 'user',
+        parts: [{ text: currentPromptText }]
+      })
+    }
 
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
     const result = await ai.models.generateContent({

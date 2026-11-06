@@ -63,17 +63,17 @@ export function AdvisorChat() {
     }
   }, [messages, isHydrated])
 
-  // 3. Auto-grow textarea handler
-  const adjustTextareaHeight = () => {
-    const el = inputRef.current
-    if (!el) return
-    el.style.height = 'auto'
-    el.style.height = `${Math.min(el.scrollHeight, 120)}px`
-  }
+  // 3. Auto-grow textarea with reactive effect
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto'
+      const newHeight = Math.min(Math.max(inputRef.current.scrollHeight, 36), 120)
+      inputRef.current.style.height = `${newHeight}px`
+    }
+  }, [input])
 
   function handleInputChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     setInput(e.target.value)
-    adjustTextareaHeight()
   }
 
   function handleResetChat() {
@@ -83,11 +83,28 @@ export function AdvisorChat() {
     localStorage.removeItem(STORAGE_KEY)
   }
 
+  function buildContextHistory(allMsgs: ChatMessage[]) {
+    return allMsgs.slice(-10).map(m => {
+      if (m.role === 'assistant' && m.type === 'TRANSACTION' && m.draft) {
+        const isSaved = m.saved ? 'TELAH DISIMPAN KE BUKU KAS' : 'SELESAI DITAMPILKAN'
+        const amt = m.draft.amount?.toLocaleString('id-ID') ?? '0'
+        return {
+          role: 'assistant',
+          content: `[SISTEM: Transaksi "${m.draft.description}" (${m.draft.flow_type}) Rp ${amt} ${isSaved}. Jangan proses ulang transaksi ini.] ${m.content || ''}`,
+        }
+      }
+      return {
+        role: m.role,
+        content: m.content || '',
+      }
+    })
+  }
+
   async function send(text = input.trim()) {
     if (!text || loading) return
     setInput('')
     if (inputRef.current) {
-      inputRef.current.style.height = 'auto'
+      inputRef.current.style.height = '36px'
     }
 
     const userMsg: ChatMessage = {
@@ -101,10 +118,7 @@ export function AdvisorChat() {
     setLoading(true)
 
     try {
-      const history = messages
-        .filter(m => m.type === 'TEXT')
-        .slice(-10)
-        .map(m => ({ role: m.role, content: m.content }))
+      const history = buildContextHistory(messages)
 
       const res = await fetch('/api/advisor', {
         method: 'POST',
@@ -144,9 +158,9 @@ export function AdvisorChat() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100dvh-8rem)]">
+    <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
       {/* Top Bar with Reset Chat */}
-      <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 text-xs text-slate-500 dark:text-slate-400">
+      <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/80 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30 text-xs text-slate-500 dark:text-slate-400 flex-shrink-0">
         <span>Riwayat Tersimpan Otomatis</span>
         <button
           onClick={handleResetChat}
@@ -159,7 +173,7 @@ export function AdvisorChat() {
       </div>
 
       {/* Messages Scroll Area */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 scrollbar-hide">
+      <div className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-4 overscroll-contain">
         {/* Suggestions (shown only when 1 message) */}
         {messages.length === 1 && (
           <div className="flex flex-col gap-2">
@@ -248,7 +262,7 @@ export function AdvisorChat() {
       </div>
 
       {/* Auto-Grow Input with Mobile Safe Area */}
-      <div className="px-3 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom))] border-t border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-[#090D16]/90 backdrop-blur-md">
+      <div className="flex-shrink-0 px-3 pt-2 pb-[max(env(safe-area-inset-bottom),0.75rem)] border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#090D16]/95 backdrop-blur-md">
         <div className="flex items-end gap-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-2xl px-3.5 py-2 focus-within:border-emerald-600 focus-within:ring-2 focus-within:ring-emerald-600/20 shadow-xs transition-all">
           <textarea
             ref={inputRef}
@@ -257,7 +271,7 @@ export function AdvisorChat() {
             onKeyDown={handleKeyDown}
             placeholder="Ketik pertanyaan atau catat transaksi..."
             rows={1}
-            className="flex-1 bg-transparent text-slate-900 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none resize-none max-h-[120px] scrollbar-hide py-1 leading-5"
+            className="flex-1 bg-transparent text-slate-900 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none resize-none max-h-[120px] overflow-y-auto py-1 leading-5"
           />
           <button
             type="button"

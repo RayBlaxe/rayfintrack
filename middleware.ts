@@ -2,9 +2,21 @@ import { type NextRequest, NextResponse } from 'next/server'
 import { updateSession } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  // Explicitly bypass static PWA files and public assets from auth redirection
+  if (
+    pathname === '/manifest.json' ||
+    pathname === '/sw.js' ||
+    pathname === '/favicon.ico' ||
+    pathname.startsWith('/icons/')
+  ) {
+    return NextResponse.next()
+  }
+
   const { supabaseResponse, user } = await updateSession(request)
 
-  const isAuthRoute = request.nextUrl.pathname === '/login' || request.nextUrl.pathname === '/register'
+  const isAuthRoute = pathname === '/login' || pathname === '/register'
   
   if (!user && !isAuthRoute) {
     // Redirect unauthenticated users to login page
@@ -30,9 +42,11 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - sw.js, manifest.json (PWA files)
+     * - icons/ (PWA icons)
      * - api/ (API routes might need their own auth checks)
-     * Feel free to modify this pattern to include more paths.
+     * - static asset extensions (.svg, .png, .jpg, .jpeg, .gif, .webp, .ico)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$|api/).*)',
+    '/((?!_next/static|_next/image|favicon.ico|sw\\.js|manifest\\.json|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$|api/).*)',
   ],
 }

@@ -11,17 +11,18 @@ interface Props {
 function AppShellContent({ children }: Props) {
   const pathname = usePathname()
   const isAuthPage = pathname === '/login' || pathname === '/register'
+  const isAdvisorPage = pathname === '/advisor'
 
   return (
     <div className="min-h-dvh w-full bg-slate-50 dark:bg-[#090D16] text-slate-900 dark:text-slate-50 flex justify-center transition-colors">
       {/* Responsive Fluid Container: 100% width on mobile, centered max-w on tablet/desktop */}
       <div className="relative w-full max-w-full md:max-w-2xl lg:max-w-4xl min-h-dvh bg-slate-50 dark:bg-[#090D16] md:border-x border-slate-200/70 dark:border-slate-800/60 transition-colors">
-        {/* Scrollable main content with bottom padding for FloatingDock */}
-        <main className={isAuthPage ? '' : 'pb-32 pt-[env(safe-area-inset-top)]'}>
+        {/* Main content: full viewport lock on /advisor, bottom-padded on standard pages */}
+        <main className={isAuthPage ? '' : isAdvisorPage ? 'h-[100dvh] overflow-hidden' : 'pb-32 pt-[env(safe-area-inset-top)]'}>
           {children}
         </main>
-        {/* Floating dock only on non-auth pages */}
-        {!isAuthPage && <FloatingDock />}
+        {/* Floating dock only on non-auth and non-advisor pages */}
+        {!isAuthPage && !isAdvisorPage && <FloatingDock />}
       </div>
 
       {/* Desktop ambient bg */}

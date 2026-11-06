@@ -12,6 +12,7 @@ export function InstallPromptBanner() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isIOS, setIsIOS] = useState(false)
   const [isStandalone, setIsStandalone] = useState(false)
+  const [isInsecureOrigin, setIsInsecureOrigin] = useState(false)
   const [dismissed, setDismissed] = useState(false)
 
   useEffect(() => {
@@ -26,7 +27,15 @@ export function InstallPromptBanner() {
     const ios = /iphone|ipad|ipod/.test(ua)
     setIsIOS(ios)
 
-    // 3. Catch beforeinstallprompt on Chrome / Android
+    // 3. Detect insecure non-localhost context (e.g. http://192.168.x.x:3000)
+    if (typeof window !== 'undefined') {
+      const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      if (!window.isSecureContext && !isLocalhost) {
+        setIsInsecureOrigin(true)
+      }
+    }
+
+    // 4. Catch beforeinstallprompt on Chrome / Android
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault()
       setDeferredPrompt(e as BeforeInstallPromptEvent)
@@ -36,7 +45,8 @@ export function InstallPromptBanner() {
     return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   }, [])
 
-  if (isStandalone || dismissed || (!deferredPrompt && !isIOS)) return null
+  if (isStandalone || dismissed) return null
+  if (!deferredPrompt && !isIOS && !isInsecureOrigin) return null
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return
@@ -48,9 +58,13 @@ export function InstallPromptBanner() {
   }
 
   return (
-    <div className="mx-4 mt-3 mb-2 p-3 sm:p-3.5 rounded-2xl bg-emerald-950/80 dark:bg-emerald-950/50 border border-emerald-600/40 text-emerald-100 flex items-center justify-between gap-3 shadow-md animate-in fade-in">
+    <div className="mx-4 mt-3 mb-2 p-3 sm:p-3.5 rounded-2xl bg-emerald-950/90 dark:bg-emerald-950/70 border border-emerald-500/40 text-emerald-100 flex items-center justify-between gap-3 shadow-md animate-in fade-in">
       <div className="text-xs flex-1">
-        {isIOS ? (
+        {isInsecureOrigin ? (
+          <p className="leading-relaxed">
+            <span className="font-bold text-amber-300">💡 Info PWA:</span> Browser HP memerlukan <span className="font-semibold underline">HTTPS</span> untuk mengizinkan instalasi. Gunakan tunnel HTTPS atau buka di Chrome Desktop pada <code className="bg-emerald-900/60 px-1 py-0.5 rounded font-mono">localhost:3000</code>.
+          </p>
+        ) : isIOS ? (
           <p className="flex items-center gap-1.5 flex-wrap">
             <span>Instal RayFin di iOS: ketuk tombol</span>
             <Share className="w-3.5 h-3.5 inline text-emerald-400" />
@@ -60,7 +74,7 @@ export function InstallPromptBanner() {
           </p>
         ) : (
           <p className="font-medium">
-            Instal aplikasi RayFin di HP untuk akses offline cepat & pengalaman layar penuh.
+            Instal aplikasi RayFin di HP untuk akses cepat & pengalaman layar penuh.
           </p>
         )}
       </div>
