@@ -6,9 +6,21 @@ interface Props {
   className?: string
 }
 
+function getDeterministicColor(str: string): string {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const colors = [
+    '#10B981', '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6',
+    '#EC4899', '#F43F5E', '#F97316', '#EAB308', '#14B8A6'
+  ]
+  return colors[Math.abs(hash) % colors.length]
+}
+
 export function CategoryBadge({ category, showEmoji = true, className = '' }: Props) {
-  const emoji = CATEGORY_EMOJI[category] ?? '📁'
-  const color = CATEGORY_COLORS[category] ?? '#94a3b8'
+  const emoji = CATEGORY_EMOJI[category] ?? '📦'
+  const color = CATEGORY_COLORS[category] ?? getDeterministicColor(category || 'Lainnya')
 
   return (
     <span
@@ -16,7 +28,7 @@ export function CategoryBadge({ category, showEmoji = true, className = '' }: Pr
     >
       <span className="h-2 w-2 rounded-full flex-shrink-0 shadow-xs" style={{ backgroundColor: color }} />
       {showEmoji && <span className="text-[11px]">{emoji}</span>}
-      <span className="truncate max-w-[120px]">{category}</span>
+      <span className="truncate max-w-[130px]">{category || 'Umum'}</span>
     </span>
   )
 }

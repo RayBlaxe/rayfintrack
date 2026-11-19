@@ -12,6 +12,8 @@ import {
   Bot,
   User,
   Lightbulb,
+  FolderTree,
+  Brain,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ThemeToggle } from '@/components/shared/ThemeToggle'
@@ -25,6 +27,8 @@ const NAV_ITEMS = [
   { href: '/goals', label: 'Target Finansial', icon: Target },
   { href: '/scanner', label: 'Scan Struk', icon: Camera },
   { href: '/advisor', label: 'AI Advisor', icon: Bot },
+  { href: '/settings/categories', label: 'Kategori Kustom', icon: FolderTree },
+  { href: '/settings/ai-rules', label: 'Aturan AI (Supra)', icon: Brain },
   { href: '/profile', label: 'Profil Saya', icon: User },
 ]
 

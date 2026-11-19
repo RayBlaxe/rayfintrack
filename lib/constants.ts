@@ -189,3 +189,7 @@ export const MENU_ITEMS: { icon: string; label: string; href: string }[] = [
   { icon: '👤', label: 'Profil', href: '/profile' },
   { icon: '💡', label: 'Insights', href: '/insights' },
 ]
+
+export const DEFAULT_AI_RULES = `Motor Supra saya adalah kendaraan utama transportasi untuk komuter sehari-hari ke kantor dan perjalanan lainnya.
+Semua pengeluaran terkait motor Supra (bensin, servis, ganti oli, cuci motor, ban, sparepart, dan modifikasi bagian motor) WAJIB masuk ke kategori "Transportasi", BUKAN "Operasional".
+Jika saya menyebutkan instruksi kategori khusus secara langsung dalam percakapan, selalu patuhi kategori yang saya minta.`

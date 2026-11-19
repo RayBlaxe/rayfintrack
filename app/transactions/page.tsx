@@ -9,11 +9,13 @@ import { useTransactions } from '@/hooks/useTransactions'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatRupiah } from '@/lib/formatters'
 import { TransactionFilterBar } from '@/components/transactions/TransactionFilterBar'
-import { FlowType } from '@/types'
+import { ExportModal } from '@/components/transactions/ExportModal'
+import { Download } from 'lucide-react'
 
 export default function TransactionsPage() {
   const [date, setDate] = useState(new Date())
   const { transactions, loading, refetch } = useTransactions({ date, limit: 500 })
+  const [showExportModal, setShowExportModal] = useState(false)
 
   // Filter States
   const [query, setQuery] = useState('')
@@ -74,13 +76,26 @@ export default function TransactionsPage() {
     <RealtimeProvider>
       <Header date={date} onDateChange={setDate} title="Transaksi" />
 
-      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-5">
-        <div className="hidden md:flex items-center justify-between">
+      <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-5 pb-20">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Riwayat Transaksi</h1>
-            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Cari, filter, edit, atau batalkan transaksi</p>
+            <h1 className="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-50 tracking-tight">Riwayat Transaksi</h1>
+            <p className="text-slate-500 dark:text-slate-400 text-xs mt-0.5">Cari, filter, edit, atau unduh laporan</p>
           </div>
-          <MonthPicker date={date} onChange={setDate} />
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowExportModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span>Ekspor</span>
+            </button>
+            <div className="hidden md:block">
+              <MonthPicker date={date} onChange={setDate} />
+            </div>
+          </div>
         </div>
 
         {/* Summary cards */}
@@ -118,9 +133,14 @@ export default function TransactionsPage() {
         {/* Transactions List */}
         <RecentTransactions
           transactions={filteredTransactions}
-          title={query || selectedAccount !== 'ALL' || selectedCategory !== 'ALL' || selectedFlow !== 'ALL' ? 'Hasil Filter Transaksi' : 'Daftar Transaksi Bulan Ini'}
           onRefresh={refetch}
-          showActions={true}
+        />
+
+        {/* Export Modal */}
+        <ExportModal
+          open={showExportModal}
+          onClose={() => setShowExportModal(false)}
+          transactions={transactions}
         />
       </div>
     </RealtimeProvider>

@@ -2,7 +2,8 @@
 
 import { useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, User, Loader2, Database } from 'lucide-react'
+import { ArrowRight, User, Lock, Loader2, Database } from 'lucide-react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createBrowserClient } from '@supabase/ssr'
 
@@ -11,6 +12,8 @@ function RegisterForm() {
   const initialUsername = searchParams.get('username') || ''
   
   const [username, setUsername] = useState(initialUsername)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [step, setStep] = useState(1)
@@ -27,13 +30,27 @@ function RegisterForm() {
       setError('Masukkan username terlebih dahulu')
       return
     }
+
+    if (!password) {
+      setError('Password wajib diisi')
+      return
+    }
+
+    if (password.length < 6) {
+      setError('Password minimal 6 karakter')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Konfirmasi password tidak cocok')
+      return
+    }
     
     setIsLoading(true)
     setError('')
     
     const formattedUsername = username.trim().toLowerCase()
     const email = `${formattedUsername}@rayfin.local`
-    const password = `RayFin!${formattedUsername}2026`
 
     try {
       // 1. Sign up user via Server API
@@ -41,7 +58,7 @@ function RegisterForm() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username: username.trim() })
+        body: JSON.stringify({ email, password, username: formattedUsername })
       })
       const data = await res.json()
 
@@ -98,13 +115,55 @@ function RegisterForm() {
               setUsername(e.target.value)
               if (error) setError('')
             }}
-            placeholder="Masukkan username kamu"
+            placeholder="Contoh: roy"
             className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-600/20 transition-all font-medium"
             autoFocus
+            required
           />
         </div>
-        {error && <p className="text-[11px] font-semibold text-red-600 dark:text-red-400">{error}</p>}
       </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Password</label>
+        <div className="relative flex items-center">
+          <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+            <Lock className="h-4 w-4" />
+          </div>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value)
+              if (error) setError('')
+            }}
+            placeholder="Minimal 6 karakter"
+            className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-600/20 transition-all font-medium"
+            required
+          />
+        </div>
+      </div>
+
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">Konfirmasi Password</label>
+        <div className="relative flex items-center">
+          <div className="absolute left-3.5 text-slate-400 pointer-events-none">
+            <Lock className="h-4 w-4" />
+          </div>
+          <input
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => {
+              setConfirmPassword(e.target.value)
+              if (error) setError('')
+            }}
+            placeholder="Ulangi password"
+            className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-600/20 transition-all font-medium"
+            required
+          />
+        </div>
+      </div>
+
+      {error && <p className="text-[11px] font-semibold text-red-600 dark:text-red-400">{error}</p>}
 
       <button
         type="submit"
@@ -125,6 +184,13 @@ function RegisterForm() {
           </>
         )}
       </button>
+
+      <div className="pt-2 text-center text-xs text-slate-500 dark:text-slate-400">
+        Sudah punya akun?{' '}
+        <Link href="/login" className="font-semibold text-emerald-600 dark:text-emerald-400 hover:underline">
+          Masuk di sini
+        </Link>
+      </div>
     </form>
   )
 }
@@ -149,17 +215,17 @@ export default function RegisterPage() {
             <h1 className="text-2xl font-black tracking-tight text-slate-900 dark:text-slate-50 flex items-center justify-center gap-2">
               Registrasi <span className="text-emerald-600 dark:text-emerald-400">RayFin</span>
             </h1>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Buat akun untuk mengelola keuangan pribadi</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">Buku Kas Personal dengan Isolasi Data Penuh</p>
           </div>
         </div>
 
         <div className="bg-white dark:bg-[#0B0F17] border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 shadow-xl space-y-6 transition-colors">
           <div className="space-y-1">
-            <h2 className="text-base font-bold text-slate-900 dark:text-slate-50">Inisialisasi Akun</h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Username akan dibuatkan buku kas mandiri dengan data aman terisolasi.</p>
+            <h2 className="text-base font-bold text-slate-900 dark:text-slate-50">Akun Baru 🚀</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Username unik akan menjadi identitas buku kas kamu.</p>
           </div>
 
-          <Suspense fallback={<div className="h-28 flex items-center justify-center"><Loader2 className="h-6 w-6 text-emerald-600 animate-spin" /></div>}>
+          <Suspense fallback={<div className="text-center py-4 text-xs text-slate-400">Memuat formulir...</div>}>
             <RegisterForm />
           </Suspense>
         </div>

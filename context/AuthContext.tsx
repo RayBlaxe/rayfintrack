@@ -37,8 +37,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .eq('id', session.user.id)
             .single()
           
-          if (mounted && profile) {
-            setUser(profile as Profile)
+          if (mounted) {
+            if (profile) {
+              setUser(profile as Profile)
+            } else {
+              // Fallback profile from session if table row is delayed
+              const fallback: Profile = {
+                id: session.user.id,
+                username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+                email: session.user.email,
+                created_at: session.user.created_at,
+              }
+              setUser(fallback)
+              // Attempt to self-heal profiles table
+              supabase.from('profiles').upsert(fallback).then(() => {})
+            }
           }
         } else {
           if (mounted) setUser(null)
@@ -54,14 +67,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (event === 'SIGNED_IN' && session?.user) {
+        if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user) {
           const { data: profile } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', session.user.id)
             .single()
-          if (mounted && profile) {
-            setUser(profile as Profile)
+          if (mounted) {
+            if (profile) {
+              setUser(profile as Profile)
+            } else {
+              const fallback: Profile = {
+                id: session.user.id,
+                username: session.user.user_metadata?.username || session.user.email?.split('@')[0] || 'User',
+                email: session.user.email,
+                created_at: session.user.created_at,
+              }
+              setUser(fallback)
+              supabase.from('profiles').upsert(fallback).then(() => {})
+            }
             router.refresh()
           }
         } else if (event === 'SIGNED_OUT') {

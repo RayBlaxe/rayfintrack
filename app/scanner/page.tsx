@@ -1,16 +1,16 @@
 'use client'
 import { useState, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Camera, Upload, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react'
+import { Camera, Image as ImageIcon, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react'
 import { ScanResult } from '@/types'
 import { ACCOUNT_LABELS, CATEGORY_EMOJI } from '@/lib/constants'
 import { formatRupiah } from '@/lib/formatters'
 import { insertClientTransaction } from '@/lib/queries'
 import { triggerRefresh } from '@/lib/realtimeEvents'
-import Image from 'next/image'
 
 export default function ScannerPage() {
-  const inputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
+  const galleryInputRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
   const [result, setResult] = useState<ScanResult | null>(null)
@@ -76,7 +76,8 @@ export default function ScannerPage() {
     setResult(null)
     setSaved(false)
     setError('')
-    if (inputRef.current) inputRef.current.value = ''
+    if (cameraInputRef.current) cameraInputRef.current.value = ''
+    if (galleryInputRef.current) galleryInputRef.current.value = ''
   }
 
   const confidenceColor = result?.confidence === 'HIGH' ? '#CCFF00'
@@ -87,12 +88,12 @@ export default function ScannerPage() {
       {/* Header */}
       <div className="px-5 pt-8 pb-2">
         <h1 className="text-slate-900 dark:text-slate-50 text-2xl font-black tracking-tight">Scan Struk</h1>
-        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Foto struk → AI ekstrak otomatis</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Foto kamera langsung atau upload dari galeri</p>
       </div>
 
-      {/* Camera input */}
+      {/* Camera input (direct camera capture) */}
       <input
-        ref={inputRef}
+        ref={cameraInputRef}
         type="file"
         accept="image/*"
         capture="environment"
@@ -100,26 +101,52 @@ export default function ScannerPage() {
         className="hidden"
       />
 
+      {/* Gallery input (opens photo library / file browser) */}
+      <input
+        ref={galleryInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileChange}
+        className="hidden"
+      />
+
       {/* Preview + scan area */}
       <div className="px-5">
         {!preview ? (
-          <motion.button
-            whileTap={{ scale: 0.98 }}
-            onClick={() => inputRef.current?.click()}
-            className="w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-[#111827] flex flex-col items-center justify-center gap-4 hover:border-emerald-500/60 transition-all shadow-sm dark:shadow-none"
-          >
-            <div className="h-16 w-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/50">
-              <Camera className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+          <div className="space-y-4">
+            <div className="w-full aspect-[4/3] rounded-3xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-[#111827] flex flex-col items-center justify-center gap-4 p-6 text-center">
+              <div className="h-16 w-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center border border-emerald-200/50 dark:border-emerald-800/50">
+                <Camera className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-slate-900 dark:text-slate-100 font-bold text-base">Scan Struk Pembelian</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">Pilih ambil foto kamera langsung atau ambil dari galeri HP / file</p>
+              </div>
+
+              {/* Dual Action Buttons */}
+              <div className="grid grid-cols-2 gap-3 w-full max-w-xs mt-2">
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-colors"
+                >
+                  <Camera className="h-4 w-4" />
+                  <span>Ambil Foto</span>
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  type="button"
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 py-3 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-900 dark:text-slate-100 font-bold text-xs border border-slate-200 dark:border-slate-700 transition-colors"
+                >
+                  <ImageIcon className="h-4 w-4 text-emerald-500" />
+                  <span>Pilih Galeri</span>
+                </motion.button>
+              </div>
             </div>
-            <div className="text-center px-4">
-              <p className="text-slate-900 dark:text-slate-100 font-bold text-base">Ambil Foto Struk</p>
-              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Tap untuk buka kamera atau pilih dari galeri</p>
-            </div>
-            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 rounded-xl font-bold text-xs shadow-sm transition-colors">
-              <Upload className="h-4 w-4" />
-              <span>Pilih Gambar</span>
-            </div>
-          </motion.button>
+          </div>
         ) : (
           <div className="relative w-full aspect-[4/3] rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800">
             <img src={preview} alt="Preview" className="w-full h-full object-cover" />
@@ -141,7 +168,7 @@ export default function ScannerPage() {
 
       {/* Error */}
       {error && (
-        <div className="mx-5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 rounded-2xl p-4">
+        <div className="mx-5 bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:rose-900/40 rounded-2xl p-4">
           <p className="text-rose-700 dark:text-rose-400 text-sm font-medium">⚠️ {error}</p>
         </div>
       )}
