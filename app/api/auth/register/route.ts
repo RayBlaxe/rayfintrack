@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from '@/lib/supabase/config'
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,8 +14,8 @@ export async function POST(request: NextRequest) {
 
     // Gunakan Service Role Key untuk bypass Email Confirmation
     const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
+      SUPABASE_URL,
+      SUPABASE_SERVICE_ROLE_KEY
     )
 
     // 1. Buat user langsung terverifikasi (email_confirm: true)

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, User, Lock, Loader2, Database } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+import { getSupabaseClient } from '@/lib/supabase/client'
 
 function RegisterForm() {
   const searchParams = useSearchParams()
@@ -19,10 +19,7 @@ function RegisterForm() {
   const [step, setStep] = useState(1)
   const router = useRouter()
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = getSupabaseClient()
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -53,48 +50,88 @@ function RegisterForm() {
     const email = `${formattedUsername}@rayfin.local`
 
     try {
-      // 1. Sign up user via Server API
+      // 1. Sign up user via Server API with fallback to Client Auth
       setStep(2)
-      const res = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, username: formattedUsername })
-      })
-      const data = await res.json()
+      let userId: string | null = null
 
-      if (!res.ok) throw new Error(data.error || 'Gagal membuat akun')
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password, username: formattedUsername })
+        })
+        const data = await res.json()
+        if (res.ok && data.user?.id) {
+          userId = data.user.id
+        } else if (data.error && !data.error.includes('supabaseKey') && !data.error.includes('already registered')) {
+          throw new Error(data.error)
+        }
+      } catch (apiErr: any) {
+        console.warn('Server registration API failed, falling back to direct auth:', apiErr.message)
+      }
 
-      const userId = data.user?.id
-      if (!userId) throw new Error('Gagal mendapatkan ID user baru')
+      // If Server API failed or user already created, fallback to client signUp
+      if (!userId) {
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { username: formattedUsername }
+          }
+        })
+
+        if (signUpError && !signUpError.message.includes('already registered')) {
+          throw new Error(signUpError.message || 'Gagal membuat akun')
+        }
+        userId = signUpData?.user?.id || null
+      }
 
       // 2. Langsung Login agar mendapat sesi di browser
-      const { error: signInError } = await supabase.auth.signInWithPassword({
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
       if (signInError) throw signInError
 
-      // 3. Seed Default Accounts
-      setStep(3)
-      const defaultAccounts = ['BCA', 'CIMB_NIAGA', 'CIMB_OCTO_PAY', 'SEABANK', 'SHOPEEPAY', 'GOPAY', 'DANA', 'CASH', 'MEGA_SYARIAH', 'E-WALLET', 'OTHER']
-      const accountsToInsert = defaultAccounts.map(name => ({
-        user_id: userId,
-        account_name: name,
-        current_balance: 0
-      }))
+      const activeUserId = userId || signInData?.user?.id
 
-      const { error: seedError } = await supabase
-        .from('accounts')
-        .insert(accountsToInsert)
-      
-      if (seedError && seedError.code !== '23505') {
-        console.error('Seed Error:', seedError)
+      // 3. Pastikan row di profiles ada
+      if (activeUserId) {
+        await supabase.from('profiles').upsert({
+          id: activeUserId,
+          username: formattedUsername,
+          email,
+          created_at: new Date().toISOString()
+        })
+      }
+
+      // 4. Seed Default Accounts
+      setStep(3)
+      if (activeUserId) {
+        const defaultAccounts = ['BCA', 'CIMB_NIAGA', 'CIMB_OCTO_PAY', 'SEABANK', 'SHOPEEPAY', 'GOPAY', 'DANA', 'CASH', 'MEGA_SYARIAH', 'E-WALLET', 'OTHER']
+        const accountsToInsert = defaultAccounts.map(name => ({
+          user_id: activeUserId,
+          account_name: name,
+          current_balance: 0
+        }))
+
+        const { error: seedError } = await supabase
+          .from('accounts')
+          .insert(accountsToInsert)
+        
+        if (seedError && seedError.code !== '23505') {
+          console.error('Seed Error:', seedError)
+        }
       }
 
       router.push('/')
       router.refresh()
     } catch (err: any) {
-      setError(err.message || 'Gagal mendaftar')
+      if (err.message?.includes('supabaseKey')) {
+        setError('Konfigurasi Supabase telah diperbarui. Harap restart terminal dev server Anda (Ctrl+C lalu bun dev / npm run dev) dan coba lagi.')
+      } else {
+        setError(err.message || 'Gagal mendaftar')
+      }
       setIsLoading(false)
       setStep(1)
     }

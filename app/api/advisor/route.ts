@@ -3,6 +3,7 @@ import { GoogleGenAI } from '@google/genai'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { CATEGORY_EMOJI, DEFAULT_AI_RULES } from '@/lib/constants'
+import { SUPABASE_URL, SUPABASE_ANON_KEY, GEMINI_API_KEY } from '@/lib/supabase/config'
 
 const ACCOUNT_ENUM = [
   'BCA', 'CIMB_NIAGA', 'CIMB_OCTO_PAY', 'SEABANK', 'SHOPEEPAY',
@@ -15,8 +16,8 @@ async function getFinancialSnapshotAndUserRules() {
   try {
     const cookieStore = await cookies()
     const sb = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY,
       {
         cookies: {
           getAll: () => cookieStore.getAll(),
@@ -153,7 +154,7 @@ ATURAN UTAMA & EKSTRAKSI TRANSAKSI:
       })
     }
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
     const result = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents,

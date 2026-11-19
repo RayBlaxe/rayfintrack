@@ -27,7 +27,7 @@ import {
   ChevronRight,
   Activity
 } from 'lucide-react'
-import { createBrowserClient } from '@supabase/ssr'
+import { getSupabaseClient } from '@/lib/supabase/client'
 
 export default function ProfilePage() {
   const { user, logout } = useAuth()
@@ -46,10 +46,7 @@ export default function ProfilePage() {
   const [pwdError, setPwdError] = useState('')
   const [showFormulaModal, setShowFormulaModal] = useState(false)
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = getSupabaseClient()
 
   const displayName = user?.username || process.env.NEXT_PUBLIC_USER_NAME || 'Ray'
   const initials = displayName.slice(0, 2).toUpperCase()

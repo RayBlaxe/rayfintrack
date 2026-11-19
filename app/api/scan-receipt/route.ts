@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { GoogleGenAI } from '@google/genai'
+import { GEMINI_API_KEY } from '@/lib/supabase/config'
 
 const ACCOUNT_ENUM = ['BCA','CIMB_NIAGA','CIMB_OCTO_PAY','SEABANK','SHOPEEPAY','GOPAY','DANA','CASH','MEGA_SYARIAH','HONEST_CARD','STOCKBIT','E-WALLET','OTHER']
 const CATEGORY_ENUM = ['Makanan & Minuman','Belanja Online','Hiburan','Kesehatan','Pendidikan','Rumah Tangga','Operasional','Cicilan','Komitmen Keluarga','Lifestyle & Dating','Transfer Internal','Gaji','Freelance','Investasi','Lainnya']
@@ -46,7 +47,7 @@ Kembalikan HANYA JSON dengan struktur:
 }
 Jika bukan struk/nota, kembalikan { "error": "Bukan struk yang valid" }.`
 
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! })
+    const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
     const result = await ai.models.generateContent({
       model: 'gemini-3.5-flash-lite',
       contents: [{

@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+import { getSupabaseClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types'
 
 interface AuthContextType {
@@ -19,10 +19,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  const supabase = getSupabaseClient()
 
   useEffect(() => {
     let mounted = true
@@ -66,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loadSession()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      async (event: any, session: any) => {
         if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && session?.user) {
           const { data: profile } = await supabase
             .from('profiles')
