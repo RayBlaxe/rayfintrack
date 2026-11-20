@@ -10,10 +10,10 @@ export const ACCOUNT_LABELS: Record<string, string> = {
   GOPAY: 'GoPay',
   DANA: 'DANA',
   CASH: 'Tunai',
-  MEGA_SYARIAH: 'KK Mega Syariah',
-  HONEST_CARD: 'KK Honest Card (MacBook)',
-  STOCKBIT: 'RDN Stockbit',
-  'E-WALLET': 'E-Wallet (Other)',
+  MEGA_SYARIAH: 'Kartu Kredit (Mega)',
+  HONEST_CARD: 'Kartu Kredit (Honest)',
+  STOCKBIT: 'RDN Investasi',
+  'E-WALLET': 'E-Wallet',
   OTHER: 'Lainnya',
 }
 
@@ -190,6 +190,5 @@ export const MENU_ITEMS: { icon: string; label: string; href: string }[] = [
   { icon: '💡', label: 'Insights', href: '/insights' },
 ]
 
-export const DEFAULT_AI_RULES = `Motor Supra saya adalah kendaraan utama transportasi untuk komuter sehari-hari ke kantor dan perjalanan lainnya.
-Semua pengeluaran terkait motor Supra (bensin, servis, ganti oli, cuci motor, ban, sparepart, dan modifikasi bagian motor) WAJIB masuk ke kategori "Transportasi", BUKAN "Operasional".
+export const DEFAULT_AI_RULES = `Pengeluaran terkait kendaraan dan transportasi (bensin, servis, ganti oli, cuci kendaraan, tol, parkir) selalu dimasukkan ke kategori "Transportasi", bukan "Operasional".
 Jika saya menyebutkan instruksi kategori khusus secara langsung dalam percakapan, selalu patuhi kategori yang saya minta.`

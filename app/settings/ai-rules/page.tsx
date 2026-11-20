@@ -52,7 +52,7 @@ export default function AiRulesPage() {
   }
 
   const handleResetDefault = () => {
-    if (confirm('Kembalikan aturan AI ke format bawaan (Supra → Transportasi)?')) {
+    if (confirm('Kembalikan aturan AI ke format bawaan?')) {
       setRules(DEFAULT_AI_RULES)
     }
   }
@@ -94,7 +94,7 @@ export default function AiRulesPage() {
               Instruksi & Kebijakan Kategori Khusus
             </label>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-3">
-              Contoh: Motor Supra adalah kendaraan utama komuter, semua biaya servis/bensin/oli harus masuk kategori Transportasi (bukan Operasional).
+              Contoh: Semua biaya bensin dan perawatan kendaraan harian masukkan ke kategori Transportasi (bukan Operasional).
             </p>
 
             {loading ? (

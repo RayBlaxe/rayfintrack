@@ -102,11 +102,9 @@ DAFTAR KATEGORI VALID:
 ATURAN KHUSUS PENGGUNA (PRIORITAS TERTINGGI — WAJIB DIPATUHI):
 ${userRulesText}
 
-ATURAN KATEGORISASI MOTOR & KENDARAAN (SANGAT KRITIKAL):
-- Motor / Sepeda Motor / Motor Supra adalah alat transportasi utama pengguna untuk bekerja dan mobilitas sehari-hari.
-- Setiap pengeluaran terkait motor Supra atau motor pengguna (bensin, pertalite, pertamax, servis berkala, ganti oli mesin/gardan, cuci motor, ganti ban, modifikasi motor, sparepart) WAJIB dimasukkan ke kategori "Transportasi", BUKAN "Operasional"!
-- Jangan pernah mengelompokkan perawatan motor atau bensin motor ke "Operasional".
-- Jika pengguna meminta kategori spesifik secara eksplisit (contoh: "masukin ke kategori transportasi"), kamu WAJIB mengikuti kategori yang diminta pengguna!
+ATURAN KATEGORISASI TRANSPORTASI & KENDARAAN:
+- Setiap pengeluaran terkait kendaraan pengguna (bensin, pertalite, pertamax, servis berkala, ganti oli, cuci kendaraan, ban, sparepart, parkir, tol) WAJIB dimasukkan ke kategori "Transportasi", BUKAN "Operasional".
+- Jika pengguna meminta kategori spesifik secara eksplisit (contoh: "masukin ke kategori operasional"), kamu WAJIB mengikuti kategori yang diminta pengguna!
 
 ATURAN UTAMA & EKSTRAKSI TRANSAKSI:
 1. Riwayat percakapan (history) HANYA digunakan sebagai referensi konteks untuk tanya-jawab keuangan (Q&A) dan kelanjutan percakapan.
@@ -114,7 +112,7 @@ ATURAN UTAMA & EKSTRAKSI TRANSAKSI:
 3. Ekstraksi draft transaksi BARU HANYA boleh diambil secara EKSKLUSIF dari PESAN TERAKHIR yang diawali dengan [LATEST_USER_INPUT_TO_PROCESS]!
 4. Jika PESAN TERAKHIR pengguna berisi deskripsi transaksi baru:
    - Buat draft HANYA untuk transaksi baru tersebut.
-   - Contoh: "beli bensin supra 30rb cash" → category: "Transportasi", description: "Bensin Supra", amount: 30000, source_account: "CASH", flow_type: "EXPENSE".
+   - Contoh: "beli bensin 30rb cash" → category: "Transportasi", description: "Bensin", amount: 30000, source_account: "CASH", flow_type: "EXPENSE".
    - Contoh: "servis motor ganti oli 85rb pake bca" → category: "Transportasi", description: "Servis Motor & Ganti Oli", amount: 85000, source_account: "BCA", flow_type: "EXPENSE".
 5. FORMAT RESPONSE:
    - Jika pesan [LATEST_USER_INPUT_TO_PROCESS] mendeskripsikan transaksi keuangan baru (pengeluaran, pemasukan, transfer, atau bayar tagihan CC), kembalikan JSON:
@@ -155,14 +153,27 @@ ATURAN UTAMA & EKSTRAKSI TRANSAKSI:
     }
 
     const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY })
-    const result = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents,
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: 'application/json',
-      },
-    })
+    let result: any
+    try {
+      result = await ai.models.generateContent({
+        model: 'gemini-3.8-flash',
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+        },
+      })
+    } catch (modelErr) {
+      console.warn('Fallback to gemini-3.5-flash-lite:', modelErr)
+      result = await ai.models.generateContent({
+        model: 'gemini-3.5-flash-lite',
+        contents,
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json',
+        },
+      })
+    }
 
     const text = result.text ?? '{}'
     const data = JSON.parse(text)

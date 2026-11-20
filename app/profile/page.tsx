@@ -275,8 +275,8 @@ export default function ProfilePage() {
                 <Brain className="h-5 w-5" />
               </div>
               <div>
-                <p className="text-slate-900 dark:text-slate-100 font-bold text-sm">Aturan AI Advisor (Motor Supra, dll)</p>
-                <p className="text-slate-500 dark:text-slate-400 text-xs">Atur preferensi AI (Supra → Transportasi bukan Operasional)</p>
+                <p className="text-slate-900 dark:text-slate-100 font-bold text-sm">Aturan AI Advisor Personal</p>
+                <p className="text-slate-500 dark:text-slate-400 text-xs">Atur preferensi & kebiasaan AI dalam mencatat keuangan</p>
               </div>
             </div>
             <ChevronRight className="h-4 w-4 text-slate-400" />

@@ -110,7 +110,7 @@ export function AddLiabilityModal({ accounts, open, onClose, onCreated }: Props)
                 required
                 value={creditorName}
                 onChange={e => setCreditorName(e.target.value)}
-                placeholder="Josep, Budi, Mas Dimas..."
+                placeholder="Budi, Mas Dimas, Teman Kantor..."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-emerald-500"
               />
             </div>

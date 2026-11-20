@@ -129,7 +129,7 @@ export default function CategoriesPage() {
             <div className="bg-white dark:bg-[#111827] rounded-3xl p-6 border border-dashed border-slate-300 dark:border-slate-800 text-center space-y-2">
               <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">Belum ada kategori kustom</p>
               <p className="text-[11px] text-slate-400">
-                Kamu bisa menambahkan kategori atau subkategori baru (misal: "Servis Supra" di bawah Transportasi).
+                Kamu bisa menambahkan kategori atau subkategori baru (misal: "Bensin Motor" di bawah Transportasi).
               </p>
               <button
                 type="button"
@@ -266,7 +266,7 @@ export default function CategoriesPage() {
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder={isSubcategory ? 'Contoh: Servis Supra' : 'Contoh: Hobi & Motor'}
+                    placeholder={isSubcategory ? 'Contoh: Bensin Motor' : 'Contoh: Hobi & Kreasi'}
                     className="w-full h-11 px-3.5 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 font-medium"
                     required
                     autoFocus

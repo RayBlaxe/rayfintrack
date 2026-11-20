@@ -8,7 +8,7 @@ import { TransactionDraftCard } from './TransactionDraftCard'
 import { cn } from '@/lib/utils'
 
 const SUGGESTIONS = [
-  'Beli bensin supra 30rb cash',
+  'Beli bensin 30rb cash',
   'Servis motor dan ganti oli 85rb BCA',
   'Berapa saldo kas dan tabungan saya?',
   'Bagaimana kondisi keuangan bulan ini?',
@@ -20,7 +20,7 @@ const INITIAL_WELCOME: ChatMessage = {
   id: '0',
   role: 'assistant',
   type: 'TEXT',
-  content: 'Halo! Aku RayFin AI 🤖\nKirim transaksi ("Beli bensin supra 30rb cash") atau tanyakan kondisi keuanganmu. Riwayat chat ini tersinkronisasi otomatis ke akun cloud kamu!',
+  content: 'Halo! Aku RayFin AI 🤖\nKirim transaksi ("Beli bensin 30rb cash") atau tanyakan kondisi keuanganmu. Riwayat chat ini tersinkronisasi otomatis ke akun cloud kamu!',
   timestamp: new Date(),
 }
 

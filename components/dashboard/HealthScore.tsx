@@ -136,7 +136,9 @@ export function HealthScore({
             {label}
           </div>
           <p className="text-slate-600 dark:text-slate-400 text-xs leading-relaxed font-medium">
-            {score >= 80
+            {score === 0 && label === 'BELUM ADA DATA'
+              ? 'Catat transaksi atau anggaran pertamamu untuk mulai menghitung Financial Health Score!'
+              : score >= 80
               ? 'Keuanganmu sangat sehat! Pertahankan disiplin alokasi ini.'
               : score >= 60
               ? 'Kondisi cukup stabil. Sisa anggaran aman dan aset terjaga.'

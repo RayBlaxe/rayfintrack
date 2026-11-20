@@ -243,7 +243,7 @@ export function EditTransactionModal({ transaction, open, onClose, onSaved }: Pr
                   type="text"
                   value={subcategory}
                   onChange={e => setSubcategory(e.target.value)}
-                  placeholder="Contoh: Servis Supra, Ganti Oli, dll"
+                  placeholder="Contoh: Bensin, Ganti Oli, dll"
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
                 />
               )}

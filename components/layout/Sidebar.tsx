@@ -28,7 +28,7 @@ const NAV_ITEMS = [
   { href: '/scanner', label: 'Scan Struk', icon: Camera },
   { href: '/advisor', label: 'AI Advisor', icon: Bot },
   { href: '/settings/categories', label: 'Kategori Kustom', icon: FolderTree },
-  { href: '/settings/ai-rules', label: 'Aturan AI (Supra)', icon: Brain },
+  { href: '/settings/ai-rules', label: 'Aturan AI Personal', icon: Brain },
   { href: '/profile', label: 'Profil Saya', icon: User },
 ]
 

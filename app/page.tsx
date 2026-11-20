@@ -86,12 +86,16 @@ export default function DashboardPage() {
       : 50
   , [metrics.totalExpenseThisMonth, budget503020.effectiveBaseline])
 
-  // Active Personal Debt (Josep etc.)
+  // Active Personal Debt
   const personalDebts = useMemo(() => {
-    if (typeof window === 'undefined') return 100000
+    if (typeof window === 'undefined') return 0
     const list = getPersonalLiabilities()
     return list.filter(l => l.status === 'ACTIVE').reduce((s, l) => s + l.remaining_amount, 0)
   }, [])
+
+  const totalAssetValue = useMemo(() => {
+    return assets.reduce((s, a) => s + a.value, 0)
+  }, [assets])
 
   // 4-Pillar Composite Financial Health Score
   const healthResult = useMemo(() => {
@@ -103,7 +107,8 @@ export default function DashboardPage() {
       metrics.liquidAssets,
       metrics.ccDebt,
       personalDebts,
-      14779200 // Total non-liquid assets (MacBook 14jt + Stock equity 779k)
+      totalAssetValue,
+      transactions.length === 0 && metrics.totalIncomeThisMonth === 0 && metrics.totalBudgetThisMonth === 0
     )
   }, [
     needsTotal,
@@ -113,6 +118,10 @@ export default function DashboardPage() {
     metrics.liquidAssets,
     metrics.ccDebt,
     personalDebts,
+    totalAssetValue,
+    transactions.length,
+    metrics.totalIncomeThisMonth,
+    metrics.totalBudgetThisMonth,
   ])
 
   // Filtered transactions by calendar click

@@ -178,8 +178,25 @@ export function computeFinancialHealthScore(
   liquidAssets: number,
   ccDebt: number,
   totalPersonalDebt: number,
-  assetValue: number
+  assetValue: number,
+  isNewUserWithoutActivity?: boolean
 ): HealthScoreResult {
+  // If user is brand new with no transactions and no budget/income activity
+  if (isNewUserWithoutActivity || (totalExpense === 0 && liquidAssets <= 0 && assetValue === 0 && (ccDebt + totalPersonalDebt) === 0)) {
+    return {
+      score: 0,
+      label: 'BELUM ADA DATA',
+      color: '#94A3B8',
+      bg: 'rgba(148,163,184,0.12)',
+      breakdown: {
+        budgetAdherenceScore: 0,
+        liquidityScore: 0,
+        liabilityScore: 0,
+        savingsScore: 0,
+      },
+    }
+  }
+
   // 1. Budget Adherence (35 pts)
   const needsCap = effectiveBaseline * 0.5
   const wantsCap = effectiveBaseline * 0.3

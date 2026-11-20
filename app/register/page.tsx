@@ -108,7 +108,7 @@ function RegisterForm() {
       // 4. Seed Default Accounts
       setStep(3)
       if (activeUserId) {
-        const defaultAccounts = ['BCA', 'CIMB_NIAGA', 'CIMB_OCTO_PAY', 'SEABANK', 'SHOPEEPAY', 'GOPAY', 'DANA', 'CASH', 'MEGA_SYARIAH', 'E-WALLET', 'OTHER']
+        const defaultAccounts = ['BCA', 'CASH', 'GOPAY', 'SHOPEEPAY', 'DANA', 'OTHER']
         const accountsToInsert = defaultAccounts.map(name => ({
           user_id: activeUserId,
           account_name: name,
@@ -152,7 +152,7 @@ function RegisterForm() {
               setUsername(e.target.value)
               if (error) setError('')
             }}
-            placeholder="Contoh: roy"
+            placeholder="Contoh: alex, rani, atau nama kamu"
             className="w-full h-12 pl-10 pr-4 bg-slate-50 dark:bg-slate-900/80 border border-slate-300 dark:border-slate-700 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-400 focus:ring-2 focus:ring-emerald-600/20 transition-all font-medium"
             autoFocus
             required

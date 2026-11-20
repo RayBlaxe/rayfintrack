@@ -2,7 +2,7 @@
  * lib/liabilities.ts
  * Personal Liabilities & Debt Management:
  * - Queries Supabase `personal_liabilities` table first via client with offline localStorage fallback
- * - Tracks personal loans / debts (e.g., Pinjaman Josep Rp 100.000)
+ * - Tracks personal loans / debts per user account
  * - Atomic repayment via insertClientTransaction (triggers trg_sync_account_balance to deduct source account balance)
  * - Marks status as PAID with settlement date and transaction link
  */
@@ -14,41 +14,33 @@ import { getSupabaseClient } from '@/lib/supabase/client'
 
 const STORAGE_KEY = 'rayfin_personal_liabilities_v1'
 
-const INITIAL_JOSEP_LOAN: PersonalLiability = {
-  id: 'liab-josep-100k',
-  creditor_name: 'Josep',
-  title: 'Pinjaman Dana Masuk BCA',
-  principal_amount: 100000,
-  remaining_amount: 100000,
-  due_date_label: 'Jatuh Tempo: Saat Gajian / PDDN Cair',
-  status: 'ACTIVE',
-  source_account: 'BCA',
-  created_at: '2026-03-27T10:00:00.000Z',
-  notes: 'Dana pinjaman masuk ke rekening BCA pada 27 Maret 2026 (RAYFIN-2026-0327). Wajib dilunasi ke Josep saat payroll masuk.',
-}
-
 export function getPersonalLiabilities(): PersonalLiability[] {
-  if (typeof window === 'undefined') return [INITIAL_JOSEP_LOAN]
+  if (typeof window === 'undefined') return []
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify([INITIAL_JOSEP_LOAN]))
-      return [INITIAL_JOSEP_LOAN]
+      return []
     }
     const parsed = JSON.parse(raw)
-    if (Array.isArray(parsed) && parsed.length > 0) {
-      return parsed
+    if (Array.isArray(parsed)) {
+      // Filter out any legacy hardcoded demo loan
+      const cleaned = parsed.filter(item => item.id !== 'liab-josep-100k')
+      if (cleaned.length !== parsed.length) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned))
+      }
+      return cleaned
     }
   } catch (e) {
     console.warn('Failed to load personal liabilities from localStorage:', e)
   }
-  return [INITIAL_JOSEP_LOAN]
+  return []
 }
 
 export function savePersonalLiabilities(list: PersonalLiability[]): void {
   if (typeof window === 'undefined') return
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+    const cleaned = list.filter(item => item.id !== 'liab-josep-100k')
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned))
   } catch (e) {
     console.warn('Failed to save personal liabilities to localStorage:', e)
   }
@@ -68,39 +60,9 @@ export async function fetchPersonalLiabilities(): Promise<PersonalLiability[]> {
     }
 
     if (data && Array.isArray(data)) {
-      if (data.length > 0) {
-        savePersonalLiabilities(data as PersonalLiability[])
-        return data as PersonalLiability[]
-      } else {
-        // If Supabase returned empty array, check if we need to migrate/seed local items
-        const localItems = getPersonalLiabilities()
-        if (localItems.length > 0) {
-          const { data: { session } } = await sb.auth.getSession()
-          if (session?.user?.id) {
-            // Seed to cloud in background
-            for (const item of localItems) {
-              await sb.from('personal_liabilities').insert({
-                user_id: session.user.id,
-                creditor_name: item.creditor_name,
-                title: item.title,
-                principal_amount: item.principal_amount,
-                remaining_amount: item.remaining_amount,
-                due_date_label: item.due_date_label,
-                status: item.status,
-                source_account: item.source_account,
-                notes: item.notes,
-                settled_at: item.settled_at,
-              })
-            }
-            const { data: seeded } = await sb.from('personal_liabilities').select('*').order('created_at', { ascending: false })
-            if (seeded && seeded.length > 0) {
-              savePersonalLiabilities(seeded as PersonalLiability[])
-              return seeded as PersonalLiability[]
-            }
-          }
-        }
-        return data as PersonalLiability[]
-      }
+      const cleaned = (data as PersonalLiability[]).filter(item => item.id !== 'liab-josep-100k')
+      savePersonalLiabilities(cleaned)
+      return cleaned
     }
   } catch (err) {
     console.warn('Failed to fetch personal liabilities from Supabase, fallback to localStorage:', err)
@@ -174,7 +136,18 @@ export async function payPersonalLiability(
   }
 }
 
-export async function addPersonalLiability(
+export function addPersonalLiability(
+  creditorName: string,
+  title: string,
+  amount: number,
+  dueDateLabel?: string,
+  sourceAccount?: string,
+  notes?: string
+): Promise<PersonalLiability> {
+  return addPersonalLiabilityAsync(creditorName, title, amount, dueDateLabel, sourceAccount, notes)
+}
+
+export async function addPersonalLiabilityAsync(
   creditorName: string,
   title: string,
   amount: number,
