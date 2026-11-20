@@ -13,6 +13,7 @@ import { HealthScore } from '@/components/dashboard/HealthScore'
 import { RecentTransactions } from '@/components/dashboard/RecentTransactions'
 import { MonthPicker } from '@/components/shared/MonthPicker'
 import { useAccounts } from '@/hooks/useAccounts'
+import { useAssets } from '@/hooks/useAssets'
 import { useBudgets } from '@/hooks/useBudgets'
 import { useGoals } from '@/hooks/useGoals'
 import { useTransactions } from '@/hooks/useTransactions'
@@ -28,12 +29,13 @@ export default function DashboardPage() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
 
   const { accounts, refetch: refetchAccounts } = useAccounts()
+  const { assets } = useAssets()
   const { budgets, refetch: refetchBudgets } = useBudgets(date)
   const { goals } = useGoals()
   const { transactions, refetch: refetchTransactions } = useTransactions({ date, limit: 200 })
   const { dailyExpenses } = useDailyExpenses(date)
   const { settings: dailySettings } = useDailyBudgetSettings()
-  const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date)
+  const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date, assets)
 
   // Today's figures (WIB timezone)
   const todayStr = useMemo(() => {

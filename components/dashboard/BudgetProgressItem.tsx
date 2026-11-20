@@ -8,9 +8,10 @@ import { cn } from '@/lib/utils'
 
 interface Props {
   budget: BudgetWithSpending
+  onClick?: () => void
 }
 
-export function BudgetProgressItem({ budget }: Props) {
+export function BudgetProgressItem({ budget, onClick }: Props) {
   const { category, spent, limit_amount: limit, remaining, pct } = budget
   const emoji = CATEGORY_EMOJI[category] ?? '📁'
   const isOver = pct >= 100
@@ -18,7 +19,13 @@ export function BudgetProgressItem({ budget }: Props) {
   const clampedPct = Math.min(pct, 100)
 
   return (
-    <div className="space-y-2 p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/70 dark:border-slate-800 transition-colors">
+    <div
+      onClick={onClick}
+      className={cn(
+        'space-y-2 p-3.5 bg-slate-50 dark:bg-slate-900/60 rounded-2xl border border-slate-200/70 dark:border-slate-800 transition-all',
+        onClick && 'cursor-pointer hover:border-emerald-500/50 hover:shadow-xs active:scale-[0.99]'
+      )}
+    >
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-base leading-none">{emoji}</span>

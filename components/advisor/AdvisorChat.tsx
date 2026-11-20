@@ -208,7 +208,7 @@ export function AdvisorChat() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-140px)] max-h-[850px] bg-white dark:bg-[#111827] rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
+    <div className="flex flex-col flex-1 min-h-0 w-full bg-white dark:bg-[#111827] sm:rounded-3xl sm:border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden">
       {/* Chat header */}
       <div className="px-5 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/30">
         <div className="flex items-center gap-2.5">

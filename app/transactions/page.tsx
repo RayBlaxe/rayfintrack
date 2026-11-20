@@ -10,12 +10,14 @@ import { Card, CardContent } from '@/components/ui/card'
 import { formatRupiah } from '@/lib/formatters'
 import { TransactionFilterBar } from '@/components/transactions/TransactionFilterBar'
 import { ExportModal } from '@/components/transactions/ExportModal'
-import { Download } from 'lucide-react'
+import { AddTransactionModal } from '@/components/transactions/AddTransactionModal'
+import { Download, Plus } from 'lucide-react'
 
 export default function TransactionsPage() {
   const [date, setDate] = useState(new Date())
   const { transactions, loading, refetch } = useTransactions({ date, limit: 500 })
   const [showExportModal, setShowExportModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
 
   // Filter States
   const [query, setQuery] = useState('')
@@ -86,8 +88,16 @@ export default function TransactionsPage() {
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+            >
+              <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+              <span>Catat Transaksi</span>
+            </button>
+            <button
+              type="button"
               onClick={() => setShowExportModal(true)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 font-bold text-xs shadow-sm transition-all active:scale-95"
             >
               <Download className="h-3.5 w-3.5" />
               <span>Ekspor</span>
@@ -134,6 +144,13 @@ export default function TransactionsPage() {
         <RecentTransactions
           transactions={filteredTransactions}
           onRefresh={refetch}
+        />
+
+        {/* Add Transaction Modal */}
+        <AddTransactionModal
+          open={showAddModal}
+          onClose={() => setShowAddModal(false)}
+          onSaved={refetch}
         />
 
         {/* Export Modal */}

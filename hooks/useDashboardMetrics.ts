@@ -1,28 +1,40 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Account, BudgetWithSpending, Transaction } from '@/types'
+import { Account, Asset, BudgetWithSpending, Transaction, DashboardMetrics } from '@/types'
 import { CREDIT_CARD_ACCOUNTS } from '@/lib/constants'
 import { getDaysRemainingInMonth } from '@/lib/formatters'
-import { DashboardMetrics } from '@/types'
 
+/**
+ * useDashboardMetrics
+ * Computes dashboard financial indicators.
+ * Net Worth formula is consistent with Dompet (NetWorthHero):
+ *   Net Worth = Liquid Assets + Non-Liquid Assets - CC Debt
+ */
 export function useDashboardMetrics(
   accounts: Account[],
   budgets: BudgetWithSpending[],
   transactions: Transaction[],
-  date: Date = new Date()
+  date: Date = new Date(),
+  assets: Asset[] = []
 ): DashboardMetrics {
   return useMemo(() => {
-    // Net Worth
+    // Net Worth calculation consistent with NetWorthHero:
+    // 1. Liquid Assets: all non-credit-card accounts
     const liquidAssets = accounts
       .filter((a) => !CREDIT_CARD_ACCOUNTS.includes(a.account_name))
       .reduce((sum, a) => sum + a.current_balance, 0)
 
+    // 2. CC Debt: absolute negative balance of credit card accounts
     const ccDebt = accounts
       .filter((a) => CREDIT_CARD_ACCOUNTS.includes(a.account_name))
       .reduce((sum, a) => sum + Math.abs(Math.min(a.current_balance, 0)), 0)
 
-    const netWorth = liquidAssets - ccDebt
+    // 3. Asset Value: total value of tracked non-liquid/tangible assets
+    const assetValue = (assets || []).reduce((sum, a) => sum + (Number(a.value) || 0), 0)
+
+    // Total Net Worth
+    const netWorth = liquidAssets + assetValue - ccDebt
 
     // Monthly totals from transactions
     let totalExpenseThisMonth = 0
@@ -45,6 +57,7 @@ export function useDashboardMetrics(
       netWorth,
       liquidAssets,
       ccDebt,
+      assetValue,
       totalExpenseThisMonth,
       totalIncomeThisMonth,
       totalBudgetThisMonth,
@@ -52,5 +65,5 @@ export function useDashboardMetrics(
       daysRemainingInMonth,
       safeToSpendDaily,
     }
-  }, [accounts, budgets, transactions, date])
+  }, [accounts, budgets, transactions, date, assets])
 }

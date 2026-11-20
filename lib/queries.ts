@@ -17,6 +17,49 @@ export async function fetchBudgets(monthYear: string): Promise<Budget[]> {
   return data ?? []
 }
 
+export async function insertBudget(budget: {
+  month_year: string
+  category: string
+  limit_amount: number
+}): Promise<Budget> {
+  const sb = getSupabaseClient()
+  const { data: { session } } = await sb.auth.getSession()
+  const payload: any = {
+    ...budget,
+  }
+  if (session?.user?.id) {
+    payload.user_id = session.user.id
+  }
+  const { data, error } = await sb
+    .from('budgets')
+    .insert(payload)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function updateBudget(
+  id: string,
+  limit_amount: number
+): Promise<Budget> {
+  const sb = getSupabaseClient()
+  const { data, error } = await sb
+    .from('budgets')
+    .update({ limit_amount })
+    .eq('id', id)
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function deleteBudget(id: string): Promise<void> {
+  const sb = getSupabaseClient()
+  const { error } = await sb.from('budgets').delete().eq('id', id)
+  if (error) throw error
+}
+
 export async function fetchTransactions(
   startDate: string,
   endDate: string,
@@ -107,11 +150,21 @@ export async function insertClientTransaction(
   draft: TransactionDraft
 ): Promise<Transaction> {
   const sb = getSupabaseClient()
-  const payload = {
+  let userId = draft.user_id
+  if (!userId) {
+    const { data: { session } } = await sb.auth.getSession()
+    userId = session?.user?.id
+  }
+
+  const payload: any = {
     ...draft,
     source_account: draft.source_account || 'OTHER',
-    raw_prompt: '[AI Advisor]',
+    raw_prompt: draft.raw_prompt || '[AI Advisor]',
   }
+  if (userId) {
+    payload.user_id = userId
+  }
+
   const { data, error } = await sb
     .from('transactions').insert(payload).select().single()
   if (error) throw error

@@ -26,7 +26,7 @@ export function AddLiabilityModal({ accounts, open, onClose, onCreated }: Props)
 
   if (!open) return null
 
-  function handleCreate(e: React.FormEvent) {
+  async function handleCreate(e: React.FormEvent) {
     e.preventDefault()
     const numAmount = Number(amount)
     if (isNaN(numAmount) || numAmount <= 0) {
@@ -37,7 +37,7 @@ export function AddLiabilityModal({ accounts, open, onClose, onCreated }: Props)
     setLoading(true)
     setError('')
     try {
-      addPersonalLiability(
+      await addPersonalLiability(
         creditorName,
         title || `Pinjaman dari ${creditorName}`,
         numAmount,

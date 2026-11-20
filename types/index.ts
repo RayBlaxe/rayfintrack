@@ -60,6 +60,7 @@ export interface DashboardMetrics {
   netWorth: number
   liquidAssets: number
   ccDebt: number
+  assetValue?: number
   totalExpenseThisMonth: number
   totalIncomeThisMonth: number
   totalBudgetThisMonth: number
@@ -77,6 +78,7 @@ export interface CategorySpending {
 
 export interface PersonalLiability {
   id: string
+  user_id?: string
   creditor_name: string
   title: string
   principal_amount: number
@@ -84,6 +86,7 @@ export interface PersonalLiability {
   due_date_label?: string
   status: 'ACTIVE' | 'PAID'
   created_at: string
+  updated_at?: string
   settled_at?: string | null
   source_account?: string
   notes?: string
@@ -135,11 +138,14 @@ export interface TransactionDraft {
   description: string
   amount: number
   category: string
+  subcategory?: string | null
   source_account: string
   destination_account?: string | null
   flow_type: FlowType
   transaction_date: string
   merchant_name: string | null
+  user_id?: string
+  raw_prompt?: string
 }
 
 export interface ScanResult {

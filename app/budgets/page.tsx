@@ -4,17 +4,25 @@ import { useState } from 'react'
 import { RealtimeProvider } from '@/components/dashboard/RealtimeProvider'
 import { BudgetProgressList } from '@/components/dashboard/BudgetProgressList'
 import { DailyBudgetModal } from '@/components/dashboard/DailyBudgetModal'
+import { AddBudgetModal } from '@/components/budgets/AddBudgetModal'
+import { EditBudgetModal } from '@/components/budgets/EditBudgetModal'
 import { MonthPicker } from '@/components/shared/MonthPicker'
 import { useBudgets } from '@/hooks/useBudgets'
 import { useDailyBudgetSettings } from '@/hooks/useDailyBudgetSettings'
 import { formatRupiahCompact } from '@/lib/formatters'
-import { Utensils, Wallet, Settings2, Sparkles } from 'lucide-react'
+import { BudgetWithSpending } from '@/types'
+import { Utensils, Wallet, Settings2, Sparkles, Plus } from 'lucide-react'
 
 export default function BudgetsPage() {
   const [date, setDate] = useState(new Date())
   const [dailyModalOpen, setDailyModalOpen] = useState(false)
-  const { budgets, loading } = useBudgets(date)
+  const [addModalOpen, setAddModalOpen] = useState(false)
+  const [editingBudget, setEditingBudget] = useState<BudgetWithSpending | null>(null)
+  const { budgets, loading, refetch } = useBudgets(date)
   const { settings: dailySettings, updateSettings: updateDailySettings } = useDailyBudgetSettings()
+
+  const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
+  const existingCategories = budgets.map((b) => b.category)
 
   const totalLimit = budgets.reduce((s, b) => s + b.limit_amount, 0)
   const totalSpent = budgets.reduce((s, b) => s + b.spent, 0)
@@ -109,25 +117,40 @@ export default function BudgetsPage() {
 
         {/* Monthly Category Budgets */}
         <div className="px-5">
-          <BudgetProgressList budgets={budgets} loading={loading} />
+          <BudgetProgressList
+            budgets={budgets}
+            loading={loading}
+            onAddBudget={() => setAddModalOpen(true)}
+            onSelectBudget={setEditingBudget}
+          />
         </div>
 
         {/* Telegram Shortcut Info */}
         <div className="mx-5 bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 space-y-2 transition-colors">
           <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
             <Sparkles className="h-4 w-4" />
-            <span className="text-xs font-bold">Atur Cepat via Bot Telegram</span>
+            <span className="text-xs font-bold">Sinkronisasi Fleksibel</span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400">
-            Kamu juga bisa set budget langsung lewat bot Telegram RayFin:
+            Pagu anggaran tersinkronisasi otomatis dengan AI Advisor dan analisis 50/30/20 di Dashboard.
           </p>
-          <div className="bg-white dark:bg-black/40 rounded-2xl p-3 font-mono text-[11px] text-slate-800 dark:text-slate-200 space-y-1 border border-slate-200 dark:border-slate-800">
-            <p className="text-emerald-700 dark:text-emerald-400 font-semibold">/budget set Makanan &amp; Minuman 1200000</p>
-            <p className="text-emerald-700 dark:text-emerald-400 font-semibold">/budget set Operasional 600000</p>
-            <p className="text-slate-500 dark:text-slate-400">/budget — lihat ringkasan saldo &amp; limit</p>
-          </div>
         </div>
       </div>
+
+      <AddBudgetModal
+        open={addModalOpen}
+        onClose={() => setAddModalOpen(false)}
+        monthYear={monthYear}
+        existingCategories={existingCategories}
+        onCreated={refetch}
+      />
+
+      <EditBudgetModal
+        budget={editingBudget}
+        open={!!editingBudget}
+        onClose={() => setEditingBudget(null)}
+        onSaved={refetch}
+      />
 
       <DailyBudgetModal
         open={dailyModalOpen}

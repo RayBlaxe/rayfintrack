@@ -5,7 +5,7 @@ import { motion } from 'framer-motion'
 import { Handshake, Plus, CheckCircle2, CreditCard, Trash2 } from 'lucide-react'
 import { PersonalLiability, Account } from '@/types'
 import { formatRupiah } from '@/lib/formatters'
-import { getPersonalLiabilities, deletePersonalLiability } from '@/lib/liabilities'
+import { getPersonalLiabilities, fetchPersonalLiabilities, deletePersonalLiability } from '@/lib/liabilities'
 import { PayLiabilityModal } from './PayLiabilityModal'
 import { AddLiabilityModal } from './AddLiabilityModal'
 import { subscribeToRefresh } from '@/lib/realtimeEvents'
@@ -20,11 +20,17 @@ export function PersonalLiabilitiesCard({ accounts, onRefreshAccounts }: Props) 
   const [payingLiability, setPayingLiability] = useState<PersonalLiability | null>(null)
   const [isAddOpen, setIsAddOpen] = useState(false)
 
-  const reload = () => {
-    setLiabilities(getPersonalLiabilities())
+  const reload = async () => {
+    try {
+      const data = await fetchPersonalLiabilities()
+      setLiabilities(data)
+    } catch {
+      setLiabilities(getPersonalLiabilities())
+    }
   }
 
   useEffect(() => {
+    setLiabilities(getPersonalLiabilities())
     reload()
     const unsub = subscribeToRefresh(reload)
     return unsub
@@ -139,9 +145,9 @@ export function PersonalLiabilitiesCard({ accounts, onRefreshAccounts }: Props) 
                       LUNAS
                     </span>
                     <button
-                      onClick={() => {
+                      onClick={async () => {
                         if (confirm(`Hapus riwayat pinjaman ${item.creditor_name}?`)) {
-                          deletePersonalLiability(item.id)
+                          await deletePersonalLiability(item.id)
                           reload()
                         }
                       }}
