@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext'
 import { useAccounts } from '@/hooks/useAccounts'
 import { useTransactions } from '@/hooks/useTransactions'
 import { useBudgets } from '@/hooks/useBudgets'
+import { useAssets } from '@/hooks/useAssets'
 import { useDashboardMetrics } from '@/hooks/useDashboardMetrics'
 import { RealtimeProvider } from '@/components/dashboard/RealtimeProvider'
 import { computeFinancialHealthScore, compute503020 } from '@/lib/financialEngine'
@@ -32,10 +33,11 @@ import { getSupabaseClient } from '@/lib/supabase/client'
 export default function ProfilePage() {
   const { user, logout } = useAuth()
   const { accounts } = useAccounts()
+  const { assets } = useAssets()
   const date = useMemo(() => new Date(), [])
   const { transactions } = useTransactions({ date, limit: 200 })
   const { budgets } = useBudgets(date)
-  const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date)
+  const metrics = useDashboardMetrics(accounts, budgets as any, transactions, date, assets)
 
   // Password state
   const [oldPassword, setOldPassword] = useState('')
@@ -70,10 +72,14 @@ export default function ProfilePage() {
   }, [needsTotal, wantsTotal, metrics.totalBudgetThisMonth, metrics.totalIncomeThisMonth, date, daysInMonth])
 
   const personalDebts = useMemo(() => {
-    if (typeof window === 'undefined') return 100000
+    if (typeof window === 'undefined') return 0
     const list = getPersonalLiabilities()
     return list.filter(l => l.status === 'ACTIVE').reduce((s, l) => s + l.remaining_amount, 0)
   }, [])
+
+  const totalAssetValue = useMemo(() => {
+    return assets.reduce((s, a) => s + a.value, 0)
+  }, [assets])
 
   // 2. 4-Pillar Composite Score identical to Dashboard
   const healthResult = useMemo(() => {
@@ -85,7 +91,8 @@ export default function ProfilePage() {
       metrics.liquidAssets,
       metrics.ccDebt,
       personalDebts,
-      14779200
+      totalAssetValue,
+      transactions.length === 0 && metrics.totalIncomeThisMonth === 0 && metrics.totalBudgetThisMonth === 0
     )
   }, [
     needsTotal,
@@ -95,6 +102,10 @@ export default function ProfilePage() {
     metrics.liquidAssets,
     metrics.ccDebt,
     personalDebts,
+    totalAssetValue,
+    transactions.length,
+    metrics.totalIncomeThisMonth,
+    metrics.totalBudgetThisMonth,
   ])
 
   const score = healthResult.score
@@ -211,7 +222,9 @@ export default function ProfilePage() {
                 {scoreLabel}
               </div>
               <p className="text-slate-600 dark:text-slate-400 text-[11px]">
-                Disiplin {healthResult.breakdown.budgetAdherenceScore}/35 pt • Runway {healthResult.breakdown.liquidityScore}/30 pt
+                {score === 0 && scoreLabel === 'BELUM ADA DATA'
+                  ? 'Mulai catat transaksi untuk menganalisis skor'
+                  : `Disiplin ${healthResult.breakdown.budgetAdherenceScore}/35 pt • Runway ${healthResult.breakdown.liquidityScore}/30 pt`}
               </p>
             </div>
           </div>
