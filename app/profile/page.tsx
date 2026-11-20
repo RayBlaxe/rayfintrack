@@ -26,7 +26,9 @@ import {
   X,
   CheckCircle2,
   ChevronRight,
-  Activity
+  Activity,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react'
 import { getSupabaseClient } from '@/lib/supabase/client'
 
@@ -47,6 +49,12 @@ export default function ProfilePage() {
   const [pwdSuccess, setPwdSuccess] = useState('')
   const [pwdError, setPwdError] = useState('')
   const [showFormulaModal, setShowFormulaModal] = useState(false)
+
+  // Delete account state
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteConfirmationInput, setDeleteConfirmationInput] = useState('')
+  const [deleteLoading, setDeleteLoading] = useState(false)
+  const [deleteError, setDeleteError] = useState('')
 
   const supabase = getSupabaseClient()
 
@@ -148,6 +156,40 @@ export default function ProfilePage() {
       setPwdError(err.message || 'Gagal mengubah password')
     } finally {
       setPwdLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (deleteConfirmationInput.trim().toLowerCase() !== displayName.trim().toLowerCase()) {
+      setDeleteError(`Ketik "${displayName}" secara persis untuk konfirmasi`)
+      return
+    }
+
+    setDeleteLoading(true)
+    setDeleteError('')
+    try {
+      const res = await fetch('/api/user/delete-account', {
+        method: 'DELETE',
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error || 'Gagal menghapus akun')
+      }
+
+      // Clear all local storage caches
+      try {
+        localStorage.removeItem('rayfin_personal_liabilities_v1')
+        localStorage.removeItem('rayfin_financial_settings_v1')
+        localStorage.removeItem('rayfin_ai_chat_v1')
+        localStorage.removeItem('rayfin_daily_budget_settings_v1')
+      } catch {}
+
+      await logout()
+      window.location.href = '/register'
+    } catch (err: any) {
+      setDeleteError(err.message || 'Gagal menghapus akun')
+      setDeleteLoading(false)
     }
   }
 
@@ -366,13 +408,98 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => logout()}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800/50 text-xs font-bold transition-colors"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold transition-colors"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Keluar</span>
             </button>
           </div>
         </div>
+
+        {/* Danger Zone: Delete Account */}
+        <div className="mx-5 bg-red-50/50 dark:bg-red-950/20 rounded-3xl border border-red-200 dark:border-red-900/40 p-5 space-y-3 transition-colors">
+          <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+            <AlertTriangle className="h-4 w-4" />
+            <h3 className="font-bold text-sm">Zona Bahaya</h3>
+          </div>
+          <p className="text-xs text-red-600/90 dark:text-red-400/80 leading-relaxed">
+            Menghapus akun akan menghapus seluruh data transaksi, anggaran, aset, utang, dan riwayat AI kamu secara permanen dari server. Tindakan ini tidak dapat dibatalkan.
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setDeleteConfirmationInput('')
+              setDeleteError('')
+              setShowDeleteModal(true)
+            }}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-xs transition-all active:scale-95"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            <span>Hapus Akun Permanen</span>
+          </button>
+        </div>
+
+        {/* Delete Account Confirmation Modal */}
+        {showDeleteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+            <div className="bg-white dark:bg-[#111827] rounded-3xl p-6 max-w-sm w-full border border-red-300 dark:border-red-800 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+                  <AlertTriangle className="h-5 w-5" />
+                  <h3 className="font-bold text-base text-slate-900 dark:text-slate-50">Konfirmasi Hapus Akun</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteModal(false)}
+                  className="p-1 rounded-full text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+                Ketik username kamu <span className="font-bold font-mono text-red-600 dark:text-red-400">"{displayName}"</span> di bawah ini untuk mengonfirmasi penghapusan permanen akun ini:
+              </p>
+
+              <form onSubmit={handleDeleteAccount} className="space-y-3">
+                <input
+                  type="text"
+                  value={deleteConfirmationInput}
+                  onChange={(e) => {
+                    setDeleteConfirmationInput(e.target.value)
+                    if (deleteError) setDeleteError('')
+                  }}
+                  placeholder={`Ketik ${displayName}`}
+                  className="w-full h-11 px-3.5 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:border-red-500 font-mono font-bold"
+                  autoFocus
+                  required
+                />
+
+                {deleteError && (
+                  <p className="text-xs text-red-600 dark:text-red-400 font-semibold">{deleteError}</p>
+                )}
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteModal(false)}
+                    className="flex-1 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-semibold transition-colors"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={deleteLoading || deleteConfirmationInput.trim().toLowerCase() !== displayName.trim().toLowerCase()}
+                    className="flex-1 h-10 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all disabled:opacity-40"
+                  >
+                    {deleteLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    <span>{deleteLoading ? 'Menghapus...' : 'Ya, Hapus Akun'}</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
 
         {/* Formula Modal */}
         {showFormulaModal && (
