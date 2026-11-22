@@ -1,20 +1,23 @@
 'use client'
 
+import React from 'react'
 import { motion } from 'framer-motion'
 import { Account } from '@/types'
-import { ACCOUNT_LABELS, ACCOUNT_LOGOS, ACCOUNT_COLORS, CREDIT_CARD_ACCOUNTS } from '@/lib/constants'
+import { BankLogo } from '@/components/shared/BankLogo'
+import { getBankTheme } from '@/lib/bankThemes'
 import { formatRupiah } from '@/lib/formatters'
 import { cn } from '@/lib/utils'
-import { SlidersHorizontal } from 'lucide-react'
+import { SlidersHorizontal, ChevronRight } from 'lucide-react'
 
 interface Props {
   title: string
   accounts: Account[]
   showCC?: boolean
   onSelectAccount?: (account: Account) => void
+  onAddAccount?: () => void
 }
 
-function AccountRow({
+function AccountCard({
   account,
   index,
   onSelect,
@@ -23,68 +26,77 @@ function AccountRow({
   index: number
   onSelect?: (account: Account) => void
 }) {
-  const isCC = CREDIT_CARD_ACCOUNTS.includes(account.account_name)
+  const theme = getBankTheme(account.account_name)
+  const isCC = theme.type === 'CREDIT_CARD'
   const isNegative = account.current_balance < 0
-  const color = ACCOUNT_COLORS[account.account_name] ?? '#10B981'
-  const logo = ACCOUNT_LOGOS[account.account_name] ?? '🏦'
-  const label = ACCOUNT_LABELS[account.account_name] ?? account.account_name
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.03 }}
-      className="flex items-center gap-3 sm:gap-4 py-3.5 border-b border-slate-100 dark:border-slate-800/80 last:border-0 group"
-    >
-      {/* Logo circle */}
-      <div
-        className="h-11 w-11 rounded-2xl flex items-center justify-center text-xl flex-shrink-0 shadow-2xs"
-        style={{ backgroundColor: `${color}18`, border: `1px solid ${color}35` }}
-      >
-        {logo}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <p className="text-slate-900 dark:text-slate-100 text-sm font-bold truncate">{label}</p>
-        {isCC && (
-          <span className="text-[10px] font-bold bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 px-2 py-0.5 rounded-full inline-block mt-0.5">
-            Kartu Kredit
-          </span>
-        )}
-      </div>
-
-      <div className="text-right">
-        <p
-          className={cn(
-            'text-sm font-bold font-mono tracking-tight',
-            isNegative ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-slate-50'
-          )}
-        >
-          {formatRupiah(account.current_balance)}
-        </p>
-        {isCC && isNegative && (
-          <p className="text-[10px] font-semibold text-rose-500 dark:text-rose-400">Tagihan Terutang</p>
-        )}
-      </div>
-
-      {/* Adjust Button */}
-      {onSelect && (
-        <button
-          onClick={() => onSelect(account)}
-          title="Kalibrasi / Readjust Saldo"
-          className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ml-1"
-        >
-          <SlidersHorizontal className="h-4 w-4" />
-        </button>
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      onClick={() => onSelect?.(account)}
+      className={cn(
+        'group relative p-4 rounded-2xl border transition-all cursor-pointer',
+        theme.bgClass,
+        theme.borderClass,
+        'hover:shadow-md hover:scale-[1.005] active:scale-[0.99]'
       )}
+    >
+      <div className="flex items-center justify-between gap-3">
+        {/* Left: Brand SVG Logo + Names */}
+        <div className="flex items-center gap-3 min-w-0">
+          <BankLogo name={account.account_name} size="md" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-slate-900 dark:text-slate-100 font-bold text-sm tracking-tight truncate">
+                {theme.label || account.account_name}
+              </span>
+              <span className={cn('text-[10px] font-bold px-2 py-0.5 rounded-full', theme.badgeBg, theme.badgeText)}>
+                {isCC ? 'Kartu Kredit' : theme.type === 'E_WALLET' ? 'E-Wallet' : theme.type === 'CASH' ? 'Kas Tunai' : 'Bank'}
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">
+              ID: {account.account_name}
+            </p>
+          </div>
+        </div>
+
+        {/* Right: Balance + Action */}
+        <div className="flex items-center gap-2 flex-shrink-0 text-right">
+          <div>
+            <p
+              className={cn(
+                'text-sm sm:text-base font-black font-mono tracking-tight',
+                isNegative ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-slate-50'
+              )}
+            >
+              {formatRupiah(account.current_balance)}
+            </p>
+            {isCC && isNegative && (
+              <p className="text-[10px] font-semibold text-rose-500 dark:text-rose-400">Tagihan Terutang</p>
+            )}
+          </div>
+
+          <div className="p-1.5 rounded-xl bg-slate-100/80 dark:bg-slate-800/80 text-slate-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+            <SlidersHorizontal className="h-4 w-4" />
+          </div>
+        </div>
+      </div>
     </motion.div>
   )
 }
 
-export function AccountGroup({ title, accounts, showCC = false, onSelectAccount }: Props) {
+export function AccountGroup({
+  title,
+  accounts,
+  showCC = false,
+  onSelectAccount,
+  onAddAccount,
+}: Props) {
   const filtered = showCC
-    ? accounts.filter((a) => CREDIT_CARD_ACCOUNTS.includes(a.account_name))
-    : accounts.filter((a) => !CREDIT_CARD_ACCOUNTS.includes(a.account_name))
+    ? accounts.filter((a) => getBankTheme(a.account_name).type === 'CREDIT_CARD')
+    : accounts.filter((a) => getBankTheme(a.account_name).type !== 'CREDIT_CARD')
 
   if (filtered.length === 0) return null
 
@@ -94,9 +106,9 @@ export function AccountGroup({ title, accounts, showCC = false, onSelectAccount 
         <h3 className="text-slate-900 dark:text-slate-50 font-bold text-sm tracking-tight">{title}</h3>
         <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">{filtered.length} Akun</span>
       </div>
-      <div className="px-5">
+      <div className="p-4 space-y-2.5">
         {filtered.map((a, i) => (
-          <AccountRow key={a.id} account={a} index={i} onSelect={onSelectAccount} />
+          <AccountCard key={a.id} account={a} index={i} onSelect={onSelectAccount} />
         ))}
       </div>
     </div>

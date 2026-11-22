@@ -224,16 +224,64 @@ export async function restoreTransaction(
   return data as Transaction
 }
 
+export async function insertAccount(account: {
+  account_name: string
+  current_balance?: number
+}): Promise<Account> {
+  const sb = getSupabaseClient()
+  const { data: { session } } = await sb.auth.getSession()
+  const payload = {
+    account_name: account.account_name.trim().toUpperCase(),
+    current_balance: account.current_balance ?? 0,
+    user_id: session?.user?.id || undefined,
+    updated_at: new Date().toISOString(),
+  }
+  const { data, error } = await sb.from('accounts').insert(payload).select().single()
+  if (error) throw error
+  return data as Account
+}
+
+export async function updateAccount(
+  id: string,
+  updates: { account_name?: string; current_balance?: number }
+): Promise<Account> {
+  const sb = getSupabaseClient()
+  const payload: any = {
+    updated_at: new Date().toISOString(),
+  }
+  if (updates.account_name) payload.account_name = updates.account_name.trim().toUpperCase()
+  if (updates.current_balance !== undefined) payload.current_balance = updates.current_balance
+
+  const { data, error } = await sb.from('accounts').update(payload).eq('id', id).select().single()
+  if (error) throw error
+  return data as Account
+}
+
+export async function deleteAccount(id: string): Promise<void> {
+  const sb = getSupabaseClient()
+  const { error } = await sb.from('accounts').delete().eq('id', id)
+  if (error) throw error
+}
+
 export async function reconcileAccountBalance(
   accountName: string,
-  newBalance: number
+  newBalance: number,
+  accountId?: string
 ): Promise<void> {
   const sb = getSupabaseClient()
-  const { error } = await sb
-    .from('accounts')
-    .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
-    .eq('account_name', accountName)
-  if (error) throw error
+  if (accountId) {
+    const { error } = await sb
+      .from('accounts')
+      .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
+      .eq('id', accountId)
+    if (error) throw error
+  } else {
+    const { error } = await sb
+      .from('accounts')
+      .update({ current_balance: newBalance, updated_at: new Date().toISOString() })
+      .eq('account_name', accountName)
+    if (error) throw error
+  }
 }
 
 export async function insertGoal(goal: {

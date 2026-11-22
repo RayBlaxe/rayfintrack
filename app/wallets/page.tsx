@@ -13,6 +13,8 @@ import { formatRupiah, formatRupiahCompact } from '@/lib/formatters'
 import { Plus, Trash2, Pencil, Handshake, AlertCircle } from 'lucide-react'
 import { AddAssetModal } from '@/components/wallets/AddAssetModal'
 import { EditAssetModal } from '@/components/wallets/EditAssetModal'
+import { AddAccountModal } from '@/components/wallets/AddAccountModal'
+import { EditAccountModal } from '@/components/wallets/EditAccountModal'
 import { ReconcileBalanceModal } from '@/components/wallets/ReconcileBalanceModal'
 import { PersonalLiabilitiesCard } from '@/components/wallets/PersonalLiabilitiesCard'
 import { deleteAsset } from '@/lib/queries'
@@ -31,7 +33,9 @@ const TABS: { key: Tab; label: string }[] = [
 export default function WalletsPage() {
   const [tab, setTab] = useState<Tab>('all')
   const [assetModalOpen, setAssetModalOpen] = useState(false)
+  const [addAccountOpen, setAddAccountOpen] = useState(false)
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null)
+  const [editingAccount, setEditingAccount] = useState<Account | null>(null)
   const [reconcilingAccount, setReconcilingAccount] = useState<Account | null>(null)
 
   const { accounts, loading: accLoading, refetch: refetchAccounts } = useAccounts()
@@ -69,13 +73,22 @@ export default function WalletsPage() {
             <h1 className="text-slate-900 dark:text-slate-50 text-2xl font-black tracking-tight">Dompet & Aset</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Gambaran lengkap kekayaan finansialmu</p>
           </div>
-          <button
-            onClick={() => setAssetModalOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 text-xs font-bold shadow-md hover:shadow-lg transition-all"
-          >
-            <Plus className="h-4 w-4" strokeWidth={2.5} />
-            <span>Aset Baru</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setAddAccountOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md transition-all active:scale-95"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              <span>Rekening Baru</span>
+            </button>
+            <button
+              onClick={() => setAssetModalOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/60 text-slate-700 dark:text-slate-200 text-xs font-bold shadow-sm transition-all active:scale-95"
+            >
+              <Plus className="h-4 w-4" strokeWidth={2.5} />
+              <span>Aset Baru</span>
+            </button>
+          </div>
         </div>
 
         {/* Hero */}
@@ -105,7 +118,7 @@ export default function WalletsPage() {
               title="💵 Saldo & Tabungan"
               accounts={accounts}
               showCC={false}
-              onSelectAccount={setReconcilingAccount}
+              onSelectAccount={setEditingAccount}
             />
           )}
 
@@ -118,7 +131,7 @@ export default function WalletsPage() {
                 title="💳 Kartu Kredit & Cicilan"
                 accounts={accounts}
                 showCC={true}
-                onSelectAccount={setReconcilingAccount}
+                onSelectAccount={setEditingAccount}
               />
             </>
           )}
@@ -192,6 +205,22 @@ export default function WalletsPage() {
           )}
         </div>
       </div>
+
+      {/* Add Account Modal */}
+      <AddAccountModal
+        open={addAccountOpen}
+        onClose={() => setAddAccountOpen(false)}
+        existingAccountNames={accounts.map(a => a.account_name)}
+        onCreated={refetchAccounts}
+      />
+
+      {/* Edit Account Modal */}
+      <EditAccountModal
+        account={editingAccount}
+        open={!!editingAccount}
+        onClose={() => setEditingAccount(null)}
+        onSaved={refetchAccounts}
+      />
 
       {/* Add Asset Modal */}
       <AddAssetModal

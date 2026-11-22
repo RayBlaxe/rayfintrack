@@ -112,13 +112,28 @@ export function PersonalLiabilitiesCard({ accounts, onRefreshAccounts }: Props) 
                     <span className="text-[10px] text-slate-500 dark:text-slate-400">
                       Rekening Rekomendasi: <span className="font-semibold text-slate-700 dark:text-slate-300">{item.source_account || 'BCA'}</span>
                     </span>
-                    <button
-                      onClick={() => setPayingLiability(item)}
-                      className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 text-xs font-bold shadow-xs transition-all cursor-pointer"
-                    >
-                      <CreditCard className="h-3.5 w-3.5" />
-                      <span>Bayar / Lunasi</span>
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={async () => {
+                          if (confirm(`Hapus catatan pinjaman "${item.creditor_name}"?`)) {
+                            await deletePersonalLiability(item.id)
+                            reload()
+                            onRefreshAccounts?.()
+                          }
+                        }}
+                        className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors"
+                        title="Hapus pinjaman"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        onClick={() => setPayingLiability(item)}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-500 dark:hover:bg-emerald-600 dark:text-slate-950 text-xs font-bold shadow-xs transition-all cursor-pointer"
+                      >
+                        <CreditCard className="h-3.5 w-3.5" />
+                        <span>Bayar / Lunasi</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
